@@ -38,4 +38,4 @@ Esse projeto foi desenvolvido com as seguintes tecnologias:
 
 GTA San andreas é um servidor de jogo online para se divertir com os amigos.
 
-<a href="https://www.youtube.com/watch?v=QFZeA2PH2PQ">- [Visite o projeto online] </a>
+<a href="https://www.youtube.com/watch?v=QFZeA2PH2PQ" target="_blank">- [Visite o projeto online] </a>

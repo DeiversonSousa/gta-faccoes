@@ -1,0 +1,29 @@
+new
+bool:TopFoi[SLOTS],
+Valor_Maximo[10] = -1,
+PlayerMelhor[10][24],
+Percorrido
+;
+
+stock TopPlayersOnline(playerid)
+{
+    while(Percorrido < 10) {
+        for(new i; i < 500; i++)  if(IsPlayerConnected(i)) {
+            if(GetPlayerScore(i) > Valor_Maximo[Percorrido] && TopFoi[i] == false) {
+                GetPlayerName(i,PlayerMelhor[Percorrido],24);
+                Valor_Maximo[Percorrido] = GetPlayerScore(i);
+                TopFoi[i] = true;
+            }
+        }
+        Percorrido++;
+    }
+    for(new a; a < 500; a++)  if(IsPlayerConnected(a)) TopFoi[a] = false;
+    Percorrido = 0;
+    for(new i; i < 10;i++) {
+        if(PlayerMelhor[i][0] != EOS) {
+            format(string_format,64,"[%d] - Player: %s | Score: %d",i+1,PlayerMelhor[i],Valor_Maximo[i]);
+            SendClientMessage(playerid,0xC9170EFF,string_format);
+            Valor_Maximo[i] = -1;
+        }
+    }
+}

@@ -1,0 +1,238 @@
+/*
+	ZNPC: Zombified Non-Player Characters [v1.0] by Weponz
+*/
+#define FILTERSCRIPT
+#include <a_samp>//Credits: SA:MP Team
+#include <rnpc>//Credits: Mauzen
+
+#define MAX_ZOMBIES 50//OPTIONAL: Define the max amount of zombies to spawn here. (Default: 50)
+
+#define ZOMBIE_NAME "Zombie[%i]"//OPTIONAL: Define the name of zombies here. (Default: Zombie[%i])
+#define ZOMBIE_HEALTH 50//OPTIONAL: Define the full amount of health for zombies here. (Default: 50%)
+#define ZOMBIE_SKIN 162//OPTIONAL: Define the skin id for zombies here. (Default: 162)
+#define ZOMBIE_COLOR 0xFF0000FF//OPTIONAL: Define the color of zombies here. (Default: Red)
+#define ZOMBIE_DETECT 25//OPTIONAL: Define the minimum detect range for zombies here. (Default: 25 Metres)
+#define ZOMBIE_DAMAGE 25//OPTIONAL: Define the damage amount for zombies here. (Default: 25%)
+
+forward OnZombieAttack();
+forward OnZombieRoam();
+
+forward ResetDetectRange(playerid);
+
+new GetZombieVictimID[MAX_ZOMBIES];
+
+new GetVictimDetectRange[MAX_PLAYERS];
+new GetVictimResetTimer[MAX_PLAYERS];
+new GetVictimTimerStatus[MAX_PLAYERS];
+
+new Float:ZombieSpawns[2][3] =//REQUIRED: Change [2] to the amount of spawn locations.
+{
+	{0.0, 0.0, 0.0},//REQUIRED: Add zombie spawn locations here.
+	{0.0, 0.0, 0.0}//REQUIRED: Add zombie spawn locations here.
+};
+
+stock GetZombieVictim(npcid)
+{
+	for(new playerid = 0; playerid < MAX_PLAYERS; playerid++)
+	{
+	    if(!IsPlayerNPC(playerid) && IsPlayerConnected(playerid))
+	    {
+	        new Float:x, Float:y, Float:z;
+			GetPlayerPos(npcid, x, y, z);
+			if(IsPlayerInRangeOfPoint(playerid, GetVictimDetectRange[playerid], x, y, z) && GetPlayerState(playerid) == PLAYER_STATE_ONFOOT && GetPlayerInterior(playerid) == 0 && GetPlayerVirtualWorld(playerid) == 0) return playerid;
+	    }
+	}
+	return INVALID_PLAYER_ID;
+}
+
+public OnFilterScriptInit()
+{
+    RNPC_SetUpdateRate(80);
+    
+    MapAndreas_Init(MAP_ANDREAS_MODE_NOBUFFER);
+    
+    new count = 0;
+    for(new npcid = 0; npcid < MAX_ZOMBIES; npcid++)
+	{
+	    new name[24];
+	    format(name, sizeof(name), ZOMBIE_NAME, npcid + 1);
+		ConnectRNPC(name);
+		count++;
+	}
+	printf("Number of zombies created: %i", count);
+
+	SetTimer("OnZombieAttack", 1000, true);
+	SetTimer("OnZombieRoam", 10000, true);
+	return 1;
+}
+
+public OnPlayerSpawn(playerid)
+{
+	ApplyAnimation(playerid, "BOMBER", "null", 0, 0, 0, 0, 0, 1);
+	ApplyAnimation(playerid, "PED", "null", 0, 0, 0, 0, 0, 1);
+	
+	if(IsPlayerNPC(playerid))
+	{
+		new spawn = random(sizeof(ZombieSpawns));
+		SetPlayerPos(playerid, ZombieSpawns[spawn][0], ZombieSpawns[spawn][1], ZombieSpawns[spawn][2]);
+		
+		SetRNPCHealth(playerid, ZOMBIE_HEALTH);
+		SetPlayerSkin(playerid, ZOMBIE_SKIN);
+		SetPlayerColor(playerid, ZOMBIE_COLOR);
+		
+		RNPC_SetShootable(playerid, 1);
+		RNPC_ToggleVehicleCollisionCheck(playerid, 1);
+		
+		GetZombieVictimID[playerid] = INVALID_PLAYER_ID;
+		return 1;
+	}
+	else
+	{
+	    GetVictimDetectRange[playerid] = ZOMBIE_DETECT;
+	    GetVictimTimerStatus[playerid] = 0;
+	}
+	return 1;
+}
+
+public OnPlayerDeath(playerid, killerid, reason)
+{
+	if(IsPlayerNPC(killerid))
+	{
+		ApplyAnimation(killerid, "BOMBER", "BOM_Plant", 4.1, 0, 1, 1, 1, 0, 1);
+		SetRNPCHealth(killerid, ZOMBIE_HEALTH);
+		return SendDeathMessage(killerid, GetZombieVictimID[killerid], reason);
+	}
+	return 1;
+}
+
+public OnRNPCDeath(npcid, killerid, reason)
+{
+    SendDeathMessage(killerid, npcid, reason);
+	ApplyAnimation(npcid, "PED", "BIKE_fall_off", 4.1, 0, 1, 1, 1, 0, 1);
+	RespawnRNPC(npcid);
+	return 1;
+}
+
+public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
+{
+	if(!IsPlayerNPC(playerid))
+	{
+	    if(newkeys & KEY_FIRE)
+		{
+			if(GetPlayerWeapon(playerid) >= 22 && GetPlayerWeapon(playerid) <= 38)
+			{
+				GetVictimDetectRange[playerid] = (ZOMBIE_DETECT * 4);
+				if(GetVictimTimerStatus[playerid] == 1) { KillTimer(GetVictimResetTimer[playerid]); }
+				GetVictimTimerStatus[playerid] = 1;
+				GetVictimResetTimer[playerid] = SetTimerEx("ResetDetectRange", 5000, false, "i", playerid);
+			}
+		}
+		else if(newkeys & KEY_SPRINT && GetVictimTimerStatus[playerid] == 0)
+		{
+		    GetVictimDetectRange[playerid] = (ZOMBIE_DETECT * 2);
+			GetVictimTimerStatus[playerid] = 1;
+			GetVictimResetTimer[playerid] = SetTimerEx("ResetDetectRange", 5000, false, "i", playerid);
+		}
+	}
+	return 1;
+}
+
+public OnPlayerUpdate(playerid)
+{
+	if(!IsPlayerNPC(playerid))
+	{
+	    if(GetPlayerSpecialAction(playerid) == SPECIAL_ACTION_DUCK && GetVictimTimerStatus[playerid] == 0)
+		{
+		    GetVictimDetectRange[playerid] = (ZOMBIE_DETECT / 4);
+			GetVictimTimerStatus[playerid] = 1;
+			GetVictimResetTimer[playerid] = SetTimerEx("ResetDetectRange", 5000, false, "i", playerid);
+		}
+	}
+	return 1;
+}
+
+public OnZombieAttack()
+{
+	for(new npcid = 0; npcid < MAX_ZOMBIES; npcid++)
+	{
+	    if(IsPlayerNPC(npcid))
+	    {
+	        if(GetRNPCHealth(npcid) > 0)
+	        {
+		        new victim = GetZombieVictim(npcid), Float:x, Float:y, Float:z, Float:health;
+				GetPlayerPos(npcid, x, y, z);
+		        if(victim != INVALID_PLAYER_ID)
+		        {
+					if(IsPlayerInRangeOfPoint(victim, GetVictimDetectRange[victim], x, y, z))
+					{
+					    GetZombieVictimID[npcid] = victim;
+					    
+					    if(IsPlayerInRangeOfPoint(victim, 1, x, y, z))
+						{
+							RNPC_CreateBuild(npcid, PLAYER_RECORDING_TYPE_ONFOOT);
+							RNPC_AddPause(100);
+							RNPC_SetKeys(KEY_FIRE);
+							RNPC_AddPause(100);
+							RNPC_SetKeys(0);
+							RNPC_FinishBuild();
+							RNPC_StartBuildPlayback(npcid);
+							
+					        GetPlayerHealth(victim, health);
+					  		SetPlayerHealth(victim, health - ZOMBIE_DAMAGE);
+							continue;
+						}
+						GetPlayerPos(victim, x, y, z);
+					
+						MoveRNPC(npcid, x, y, z, RNPC_SPEED_RUN, 1);
+					}
+				}
+			}
+		}
+	}
+	return 1;
+}
+
+public OnZombieRoam()
+{
+	for(new npcid = 0; npcid < MAX_ZOMBIES; npcid++)
+	{
+	    if(IsPlayerNPC(npcid))
+	    {
+	        if(GetRNPCHealth(npcid) > 0)
+	        {
+		        new victim = GetZombieVictim(npcid), Float:x, Float:y, Float:z;
+				GetPlayerPos(npcid, x, y, z);
+				if(victim == INVALID_PLAYER_ID)
+			  	{
+					new pos = random(4);
+					if(pos == 0) { x = x + 100.0; }
+					else if(pos == 1) { x = x - 100.0; }
+					else if(pos == 2) { y = y + 100.0; }
+					else if(pos == 3) { y = y - 100.0; }
+
+					GetZombieVictimID[npcid] = INVALID_PLAYER_ID;
+					
+					RNPC_SetKeys(0);
+					
+					MoveRNPC(npcid, x, y, z, RNPC_SPEED_WALK, 1);
+			 	}
+			}
+		}
+	}
+	return 1;
+}
+
+public ResetDetectRange(playerid)
+{
+    if(GetPlayerSpecialAction(playerid) == SPECIAL_ACTION_DUCK)
+	{
+		GetVictimDetectRange[playerid] = (ZOMBIE_DETECT / 4);
+		GetVictimTimerStatus[playerid] = 1;
+		GetVictimResetTimer[playerid] = SetTimerEx("ResetDetectRange", 5000, false, "i", playerid);
+		return 1;
+	}
+		
+    GetVictimTimerStatus[playerid] = 0;
+    GetVictimDetectRange[playerid] = ZOMBIE_DETECT;
+	return 1;
+}

@@ -1,0 +1,73 @@
+/**********************************************************/
+/* Faça bem o uso.... Agradeceria que ao utilizar, deixe os creditos! */
+/* PetrickPS (Petrick Schoba) | facebook.com.br/petrickschobaps
+/**********************************************************/
+
+#include <a_samp>
+#include <zcmd>
+
+
+#define Bolsapizza_A 1 /* Mude os numeros para que não de futuros conflitos! */
+#define Bolsapizza_B 1 /* Mude os numeros para que não de futuros conflitos! */
+#define Bolsapizza_C 2 /* Mude os numeros para que não de futuros conflitos! */
+#define Bolsapizza_D 3 /* Mude os numeros para que não de futuros conflitos! */
+#define Bolsapizza_E 4 /* Mude os numeros para que não de futuros conflitos! */
+#define Bolsapizza_F 5 /* Mude os numeros para que não de futuros conflitos! */
+
+public OnFilterScriptInit()
+{
+    print("\n Bolsa Mochila Para Entrega De Pizzas");
+    print("  by PetrickPS ou Petrick Schoba, 2016\n");
+    return 1;
+}
+
+public OnPlayerConnect(playerid)
+{
+	RemovePlayerAttachedObject(playerid, Bolsapizza_A);
+	RemovePlayerAttachedObject(playerid, Bolsapizza_B);
+	RemovePlayerAttachedObject(playerid, Bolsapizza_C);
+	RemovePlayerAttachedObject(playerid, Bolsapizza_D);
+	RemovePlayerAttachedObject(playerid, Bolsapizza_E);
+	RemovePlayerAttachedObject(playerid, Bolsapizza_F);
+	return 1;
+}
+
+public OnPlayerDisconnect(playerid, reason)
+{
+	RemovePlayerAttachedObject(playerid, Bolsapizza_A);
+	RemovePlayerAttachedObject(playerid, Bolsapizza_B);
+	RemovePlayerAttachedObject(playerid, Bolsapizza_C);
+	RemovePlayerAttachedObject(playerid, Bolsapizza_D);
+	RemovePlayerAttachedObject(playerid, Bolsapizza_E);
+	RemovePlayerAttachedObject(playerid, Bolsapizza_F);
+	return 1;
+}
+
+public OnFilterScriptExit()
+{
+    return 1;
+}
+
+command(usarbolsa, playerid, params[])
+{
+	SendClientMessage(playerid,-1,"Você colocou a sua bolsa térmica de pizza!");
+	SetPlayerAttachedObject( playerid, Bolsapizza_A, 3013, 1, 0.078680, -0.248644, -0.002953, 91.909584, 0.000000, 0.000000, 1.000000, 1.000000, 1.000000 );
+	SetPlayerAttachedObject( playerid, Bolsapizza_B, 2646, 1, 0.086640, -0.397700, -0.008889, 358.023590, 90.474876, 3.592580, 0.405206, 1.000000, 0.296924 );
+	SetPlayerAttachedObject( playerid, Bolsapizza_C, 2646, 1, 0.084201, -0.237669, -0.206462, 89.883003, 90.955894, 2.649234, 0.290883, 1.000000, 0.296924 );
+	SetPlayerAttachedObject( playerid, Bolsapizza_D, 2646, 1, 0.079883, -0.236244, 0.165972, 96.035140, 89.889701, 175.633255, 0.297265, 1.000000, 0.301659 );
+	SetPlayerAttachedObject( playerid, Bolsapizza_E, 2646, 1, 0.274271, -0.243103, -0.003109, 271.972991, 359.880371, 90.866378, 0.414633, 1.000000, 0.224851 );
+	SetPlayerAttachedObject( playerid, Bolsapizza_F, 2646, 1, -0.088884, -0.243103, -0.003109, 271.840881, 180.403060, 89.638572, 0.414633, 1.000000, 0.224851 );
+  	return 1;
+}
+
+command(guardarbolsa, playerid, params[])
+{
+	SendClientMessage(playerid,-1,"Você guardou a sua bolsa térmica de pizza!");
+	RemovePlayerAttachedObject(playerid, Bolsapizza_A);
+	RemovePlayerAttachedObject(playerid, Bolsapizza_B);
+	RemovePlayerAttachedObject(playerid, Bolsapizza_C);
+	RemovePlayerAttachedObject(playerid, Bolsapizza_D);
+	RemovePlayerAttachedObject(playerid, Bolsapizza_E);
+	RemovePlayerAttachedObject(playerid, Bolsapizza_F);
+ 	return 1;
+}

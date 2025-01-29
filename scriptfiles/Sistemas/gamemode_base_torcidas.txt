@@ -1,0 +1,3561 @@
+/* FEITO POR FÁBIO STRALIOTI
+COPYRIGHT © 2015
+VOCÊ PODERÁ SER PUNIDO SEVERAMENTE SE USAR O GAMEMODE SEM AUTORIZAÇÃO DO AUTOR.
+*/
+
+#include <a_samp>
+#include <zcmd>
+#include <sscanf>
+#include <dof2>
+
+new Text:Registro[19];
+
+new
+IP[26],
+Arquivo[40],
+String[256],
+Administrador[MAX_PLAYERS],
+Level[MAX_PLAYERS],
+Skin[MAX_PLAYERS],
+Matou[MAX_PLAYERS],
+Morreu[MAX_PLAYERS],
+PlayerERRO[MAX_PLAYERS],
+Nome[MAX_PLAYER_NAME]
+//ANome[MAX_PLAYER_NAME]
+;
+
+enum pInfo {
+	pAdministrador,
+	pPresidente,
+	pOrg,
+	pCone,
+	pGrade,
+	pPux,
+	pPM,
+	pTrafico,
+	pTorcidas,
+	pVPresidente,
+	bool:LerPM,
+	bool:BlockPM,
+	bool:BlockIR,
+	bool:BlockTR,
+	FilaRGT,
+	FilaHELPER,
+	pReporter,
+	pBtr,
+	pHelper
+};
+new Stralioti[MAX_PLAYERS][pInfo];
+new Id;
+new stralioti[128];
+new Escudo[MAX_PLAYERS];
+new stralioti2[128];
+new Straliotii[128];
+new Senha;
+new SenhaRGT;
+new straliotiadmin[256];
+new NumeroPlayers[74];
+new texto;
+new Vip[MAX_PLAYERS];
+new minutos;
+new motivo;
+new Float:FX, Float:FY, Float:FZ;
+new Float:X, Float:Y, Float:Z, Float: Angle;
+new Float:vida;
+new Float:colete;
+new straliotiid[MAX_PLAYERS];
+new HighestID;
+new gPlayerUsingLoopingAnim[MAX_PLAYERS];
+new Text:txtAnimHelper;
+new animation[200];
+new IDHELPER[MAX_PLAYERS];
+new bool:Acusado[MAX_PLAYERS];
+new Mensagens[4][128] =
+{
+	"Saiba quem foi o criador do GameMode digitando /creditos",
+    "Viu algo ilegal no servidor use /reportar id motivo nossos administradores estarão pronto para atende-los",
+    "Nunca disrespeite nenhum mémbro do servidor pois não é permitido e deselegante , Bom Jogo !",
+    "Não use nenhum tipo de hacker em nosso servidor pois nossos Administradores estão atentos."
+};
+
+new Cores[] =
+{
+    0x5EB7E3AA,
+};
+new
+bool:EnqueteAberta,
+SringEnquete[128],
+TotalDeVotosSim,
+TotalDeVotosNao,
+Votos[500]
+;
+new NomeEnquete[128] = "N/A";
+new False=false;
+
+new Text:Textdraw19;
+new Text:Textdraw20;
+new Text:Textdraw21;
+new Text:Textdraw22;
+new Text:Textdraw23;
+
+forward hora(playerid);
+forward SendMessageToAdminsEx(const string[]);
+forward SendMensagens();
+
+#define  DIALOG_REGISTRO ( 1 )
+#define  DIALOG_LOGIN    ( 2 )
+#define  DIALOG_AVISO    ( 3 )
+#define  ARMAS 4
+#define  DIALOG_EN 5
+#define  ANUNCIAR 6
+#define  MUDARLUTA 7
+#define  Torcidas 8
+#define  SUDESTE 9
+#define  SUL 10
+#define  NORTE 11
+#define RJ 12
+#define SP 13
+#define MG 14
+#define PR 15
+#define BAHIA 16
+#define PE 17
+#define CE 18
+#define Funçoes "Funcao/%s.ini"
+#define VALOR 5000
+#define DIALOG_ENQUETE 25
+
+#define SPECIAL_ACTION_PISSING      68
+
+#define COR_AZUL_ADMIN  0x4876FFFF
+#define COR_AVISO       0x8B8B83FF
+#define COR_SUCESSO     0x54FF9FFF
+#define COR_GROOVE 0x00800096
+#define COR_BALLAS 0xFF00CDFF
+#define COR_AMARELO 	    0xFFFF00AA
+#define COR_ERRO 	    0xFF0000FF
+#define COR_TEXTO 	        0xE3E3E3FF
+#define COR_USOCORRETO 	0x2641FEAA
+#define COR_VERMELHO  	0xFF0000FF
+#define COR_TGT			0xAFAFAFAA
+#define COR_TOIC		0x57B0E6AA
+#define COR_PCA         0x33AA33AA
+#define COR_UPC         0xAA3333AA
+#define COR_LDB			0xFFFF00AA
+#define COR_MVP         0x800080AA
+#define COR_PDA         0x80800096
+#define COR_SALMAO      0xFA8072FF
+#define COR_AZULC       0x66CCFFFF
+#define COR_HELPER      0x33CCFFFF
+#define COR_ROSA        0xFF66CCFF
+#define COR_LARANJA     0xF4A460FF
+#define COR_KICK        0xCC3300FF
+#define COR_VERDE       0x006400FF
+#define COR_ADMIN       0x0000FFFF
+#define COR_TRF         0xCD853FFF
+
+#define VEH 1
+#define Kick(%0) SetTimerEx("Kicka", 100, false, "i", %0)
+#define Ban(%0) SetTimerEx("Bana", 100, false, "i", %0)
+#define banido "Banidos\\%s.ini"
+
+#define SendFormattedMessage(%0,%1,%2,%3) do{new _string[128]; format(_string,sizeof(_string),%2,%3); SendClientMessage(%0,%1,_string);} while(False)
+#define SendFormattedMessageToAll(%0,%1,%2) do{new _string[128]; format(_string,sizeof(_string),%1,%2); SendClientMessageToAll(%0,_string);} while(False)
+
+main()
+{
+	print("GameMode Torcidas ON");
+	print("GameMode Feito por: FÁBIO STRALIOTI");
+}
+
+public OnGameModeInit()
+{
+
+	UsePlayerPedAnims();
+	LimitGlobalChatRadius(30);
+	DisableInteriorEnterExits();
+
+
+	Textdraw19 = TextDrawCreate(462.000000, 372.000000, "NOME DO SERVIDOR");
+	TextDrawBackgroundColor(Textdraw19, 255);
+	TextDrawFont(Textdraw19, 2);
+	TextDrawLetterSize(Textdraw19, 0.589999, 2.599999);
+	TextDrawColor(Textdraw19, -16776961);
+	TextDrawSetOutline(Textdraw19, 0);
+	TextDrawSetProportional(Textdraw19, 1);
+	TextDrawSetShadow(Textdraw19, 1);
+	TextDrawSetSelectable(Textdraw19, 0);
+
+	Textdraw20 = TextDrawCreate(483.000000, 397.000000, "SITE");
+	TextDrawBackgroundColor(Textdraw20, 255);
+	TextDrawFont(Textdraw20, 2);
+	TextDrawLetterSize(Textdraw20, 0.180000, 1.200000);
+	TextDrawColor(Textdraw20, -16776961);
+	TextDrawSetOutline(Textdraw20, 0);
+	TextDrawSetProportional(Textdraw20, 1);
+	TextDrawSetShadow(Textdraw20, 1);
+	TextDrawSetSelectable(Textdraw20, 0);
+
+	Textdraw21 = TextDrawCreate(496.000000, 411.000000, "Players: 30/30");
+	TextDrawBackgroundColor(Textdraw21, 255);
+	TextDrawFont(Textdraw21, 2);
+	TextDrawLetterSize(Textdraw21, 0.290000, 1.000000);
+	TextDrawColor(Textdraw21, -16776961);
+	TextDrawSetOutline(Textdraw21, 0);
+	TextDrawSetProportional(Textdraw21, 1);
+	TextDrawSetShadow(Textdraw21, 1);
+	TextDrawSetSelectable(Textdraw21, 0);
+
+	Textdraw22 = TextDrawCreate(539.000000, 14.000000, "00/00/00");
+	TextDrawBackgroundColor(Textdraw22, 255);
+	TextDrawFont(Textdraw22, 2);
+	TextDrawLetterSize(Textdraw22, 0.500000, 1.000000);
+	TextDrawColor(Textdraw22, -16776961);
+	TextDrawSetOutline(Textdraw22, 0);
+	TextDrawSetProportional(Textdraw22, 1);
+	TextDrawSetShadow(Textdraw22, 1);
+	TextDrawSetSelectable(Textdraw22, 0);
+
+	Textdraw23 = TextDrawCreate(544.000000, 27.000000, "00:00:00");
+	TextDrawBackgroundColor(Textdraw23, 255);
+	TextDrawFont(Textdraw23, 2);
+	TextDrawLetterSize(Textdraw23, 0.500000, 1.000000);
+	TextDrawColor(Textdraw23, -16776961);
+	TextDrawSetOutline(Textdraw23, 0);
+	TextDrawSetProportional(Textdraw23, 1);
+	TextDrawSetShadow(Textdraw23, 1);
+	TextDrawSetSelectable(Textdraw23, 0);
+
+	Registro[0] = TextDrawCreate(640.000000, 0.000000, "         ");
+	TextDrawBackgroundColor(Registro[0], 255);
+	TextDrawFont(Registro[0], 1);
+	TextDrawLetterSize(Registro[0], 0.500000, 8.000000);
+	TextDrawColor(Registro[0], -1);
+	TextDrawSetOutline(Registro[0], 0);
+	TextDrawSetProportional(Registro[0], 1);
+	TextDrawSetShadow(Registro[0], 1);
+	TextDrawUseBox(Registro[0], 1);
+	TextDrawBoxColor(Registro[0], 35);
+	TextDrawTextSize(Registro[0], -30.000000, 19.000000);
+
+	Registro[1] = TextDrawCreate(388.000000, 161.000000, "          ");
+	TextDrawBackgroundColor(Registro[1], 255);
+	TextDrawFont(Registro[1], 1);
+	TextDrawLetterSize(Registro[1], 0.500000, 0.199999);
+	TextDrawColor(Registro[1], -1);
+	TextDrawSetOutline(Registro[1], 0);
+	TextDrawSetProportional(Registro[1], 1);
+	TextDrawSetShadow(Registro[1], 1);
+	TextDrawUseBox(Registro[1], 1);
+	TextDrawBoxColor(Registro[1], 60);
+	TextDrawTextSize(Registro[1], 257.000000, -20.000000);
+
+	Registro[2] = TextDrawCreate(388.000000, 190.000000, "          ");
+	TextDrawBackgroundColor(Registro[2], 255);
+	TextDrawFont(Registro[2], 1);
+	TextDrawLetterSize(Registro[2], 0.500000, 0.199999);
+	TextDrawColor(Registro[2], -1);
+	TextDrawSetOutline(Registro[2], 0);
+	TextDrawSetProportional(Registro[2], 1);
+	TextDrawSetShadow(Registro[2], 1);
+	TextDrawUseBox(Registro[2], 1);
+	TextDrawBoxColor(Registro[2], 70);
+	TextDrawTextSize(Registro[2], 257.000000, -20.000000);
+
+	Registro[3] = TextDrawCreate(388.000000, 218.000000, "          ");
+	TextDrawBackgroundColor(Registro[3], 255);
+	TextDrawFont(Registro[3], 1);
+	TextDrawLetterSize(Registro[3], 0.500000, 0.199999);
+	TextDrawColor(Registro[3], -1);
+	TextDrawSetOutline(Registro[3], 0);
+	TextDrawSetProportional(Registro[3], 1);
+	TextDrawSetShadow(Registro[3], 1);
+	TextDrawUseBox(Registro[3], 1);
+	TextDrawBoxColor(Registro[3], 70);
+	TextDrawTextSize(Registro[3], 257.000000, -20.000000);
+
+	Registro[4] = TextDrawCreate(388.000000, 247.000000, "          ");
+	TextDrawBackgroundColor(Registro[4], 255);
+	TextDrawFont(Registro[4], 1);
+	TextDrawLetterSize(Registro[4], 0.500000, 0.199999);
+	TextDrawColor(Registro[4], -1);
+	TextDrawSetOutline(Registro[4], 0);
+	TextDrawSetProportional(Registro[4], 1);
+	TextDrawSetShadow(Registro[4], 1);
+	TextDrawUseBox(Registro[4], 1);
+	TextDrawBoxColor(Registro[4], 70);
+	TextDrawTextSize(Registro[4], 257.000000, -20.000000);
+
+	Registro[5] = TextDrawCreate(282.000000, 162.000000, "Registrar");
+	TextDrawBackgroundColor(Registro[5], 255);
+	TextDrawFont(Registro[5], 2);
+	TextDrawLetterSize(Registro[5], 0.349999, 1.500000);
+	TextDrawColor(Registro[5], -1);
+	TextDrawSetOutline(Registro[5], 1);
+	TextDrawSetProportional(Registro[5], 1);
+
+	Registro[6] = TextDrawCreate(298.000000, 191.000000, "Logar");
+	TextDrawBackgroundColor(Registro[6], 255);
+	TextDrawFont(Registro[6], 2);
+	TextDrawLetterSize(Registro[6], 0.349999, 1.500000);
+	TextDrawColor(Registro[6], -1);
+	TextDrawSetOutline(Registro[6], 1);
+	TextDrawSetProportional(Registro[6], 1);
+
+	Registro[7] = TextDrawCreate(306.000000, 218.000000, "Info");
+	TextDrawBackgroundColor(Registro[7], 255);
+	TextDrawFont(Registro[7], 2);
+	TextDrawLetterSize(Registro[7], 0.349999, 1.500000);
+	TextDrawColor(Registro[7], -1);
+	TextDrawSetOutline(Registro[7], 1);
+	TextDrawSetProportional(Registro[7], 1);
+
+	Registro[8] = TextDrawCreate(305.000000, 247.000000, "Sair");
+	TextDrawBackgroundColor(Registro[8], 255);
+	TextDrawFont(Registro[8], 2);
+	TextDrawLetterSize(Registro[8], 0.349999, 1.500000);
+	TextDrawColor(Registro[8], -1);
+	TextDrawSetOutline(Registro[8], 1);
+	TextDrawSetProportional(Registro[8], 1);
+
+	Registro[9] = TextDrawCreate(650.000000, 68.000000, "         ");
+	TextDrawBackgroundColor(Registro[9], 255);
+	TextDrawFont(Registro[9], 1);
+	TextDrawLetterSize(Registro[9], 0.800000, 0.000000);
+	TextDrawColor(Registro[9], -1);
+	TextDrawSetOutline(Registro[9], 0);
+	TextDrawSetProportional(Registro[9], 1);
+	TextDrawSetShadow(Registro[9], 1);
+	TextDrawUseBox(Registro[9], 1);
+	TextDrawBoxColor(Registro[9], 1131343615);
+	TextDrawTextSize(Registro[9], -11.000000, 0.000000);
+
+	Registro[10] = TextDrawCreate(650.000000, 378.000000, "         ");
+	TextDrawBackgroundColor(Registro[10], 255);
+	TextDrawFont(Registro[10], 1);
+	TextDrawLetterSize(Registro[10], 0.800000, -0.099999);
+	TextDrawColor(Registro[10], -1);
+	TextDrawSetOutline(Registro[10], 0);
+	TextDrawSetProportional(Registro[10], 1);
+	TextDrawSetShadow(Registro[10], 1);
+	TextDrawUseBox(Registro[10], 1);
+	TextDrawBoxColor(Registro[10], 1131343615);
+	TextDrawTextSize(Registro[10], -11.000000, 0.000000);
+
+	Registro[11] = TextDrawCreate(261.000000, 161.000000, "   ");
+	TextDrawBackgroundColor(Registro[11], 255);
+	TextDrawFont(Registro[11], 1);
+	TextDrawLetterSize(Registro[11], 0.500000, 0.899999);
+	TextDrawColor(Registro[11], -1);
+	TextDrawSetOutline(Registro[11], 0);
+	TextDrawSetProportional(Registro[11], 1);
+	TextDrawSetShadow(Registro[11], 1);
+	TextDrawUseBox(Registro[11], 1);
+	TextDrawBoxColor(Registro[11], 255);
+	TextDrawTextSize(Registro[11], 262.000000, 0.000000);
+
+	Registro[12] = TextDrawCreate(261.000000, 190.000000, "   ");
+	TextDrawBackgroundColor(Registro[12], 255);
+	TextDrawFont(Registro[12], 1);
+	TextDrawLetterSize(Registro[12], 0.500000, 0.899999);
+	TextDrawColor(Registro[12], -1);
+	TextDrawSetOutline(Registro[12], 0);
+	TextDrawSetProportional(Registro[12], 1);
+	TextDrawSetShadow(Registro[12], 1);
+	TextDrawUseBox(Registro[12], 1);
+	TextDrawBoxColor(Registro[12], 1131343615);
+	TextDrawTextSize(Registro[12], 262.000000, 0.000000);
+
+	Registro[13] = TextDrawCreate(261.000000, 218.000000, "   ");
+	TextDrawBackgroundColor(Registro[13], 255);
+	TextDrawFont(Registro[13], 1);
+	TextDrawLetterSize(Registro[13], 0.500000, 0.899999);
+	TextDrawColor(Registro[13], -1);
+	TextDrawSetOutline(Registro[13], 0);
+	TextDrawSetProportional(Registro[13], 1);
+	TextDrawSetShadow(Registro[13], 1);
+	TextDrawUseBox(Registro[13], 1);
+	TextDrawBoxColor(Registro[13], 255);
+	TextDrawTextSize(Registro[13], 262.000000, 0.000000);
+
+	Registro[14] = TextDrawCreate(261.000000, 247.000000, "   ");
+	TextDrawBackgroundColor(Registro[14], 255);
+	TextDrawFont(Registro[14], 1);
+	TextDrawLetterSize(Registro[14], 0.500000, 0.899999);
+	TextDrawColor(Registro[14], -1);
+	TextDrawSetOutline(Registro[14], 0);
+	TextDrawSetProportional(Registro[14], 1);
+	TextDrawSetShadow(Registro[14], 1);
+	TextDrawUseBox(Registro[14], 1);
+	TextDrawBoxColor(Registro[14], 1131343615);
+	TextDrawTextSize(Registro[14], 262.000000, 0.000000);
+
+	Registro[15] = TextDrawCreate(388.000000, 247.000000, "   ");
+	TextDrawBackgroundColor(Registro[15], 255);
+	TextDrawFont(Registro[15], 1);
+	TextDrawLetterSize(Registro[15], 0.500000, 0.899999);
+	TextDrawColor(Registro[15], -1);
+	TextDrawSetOutline(Registro[15], 0);
+	TextDrawSetProportional(Registro[15], 1);
+	TextDrawSetShadow(Registro[15], 1);
+	TextDrawUseBox(Registro[15], 1);
+	TextDrawBoxColor(Registro[15], 1131343615);
+	TextDrawTextSize(Registro[15], 379.000000, 0.000000);
+
+	Registro[16] = TextDrawCreate(388.000000, 190.000000, "   ");
+	TextDrawBackgroundColor(Registro[16], 255);
+	TextDrawFont(Registro[16], 1);
+	TextDrawLetterSize(Registro[16], 0.500000, 0.899999);
+	TextDrawColor(Registro[16], -1);
+	TextDrawSetOutline(Registro[16], 0);
+	TextDrawSetProportional(Registro[16], 1);
+	TextDrawSetShadow(Registro[16], 1);
+	TextDrawUseBox(Registro[16], 1);
+	TextDrawBoxColor(Registro[16], 1131343615);
+	TextDrawTextSize(Registro[16], 379.000000, 0.000000);
+
+	Registro[17] = TextDrawCreate(388.000000, 218.000000, "   ");
+	TextDrawBackgroundColor(Registro[17], 255);
+	TextDrawFont(Registro[17], 1);
+	TextDrawLetterSize(Registro[17], 0.500000, 0.899999);
+	TextDrawColor(Registro[17], -1);
+	TextDrawSetOutline(Registro[17], 0);
+	TextDrawSetProportional(Registro[17], 1);
+	TextDrawSetShadow(Registro[17], 1);
+	TextDrawUseBox(Registro[17], 1);
+	TextDrawBoxColor(Registro[17], 255);
+	TextDrawTextSize(Registro[17], 379.000000, 0.000000);
+
+	Registro[18] = TextDrawCreate(388.000000, 161.000000, "   ");
+	TextDrawBackgroundColor(Registro[18], 255);
+	TextDrawFont(Registro[18], 1);
+	TextDrawLetterSize(Registro[18], 0.500000, 0.899999);
+	TextDrawColor(Registro[18], -1);
+	TextDrawSetOutline(Registro[18], 0);
+	TextDrawSetProportional(Registro[18], 1);
+	TextDrawSetShadow(Registro[18], 1);
+	TextDrawUseBox(Registro[18], 1);
+	TextDrawBoxColor(Registro[18], 255);
+	TextDrawTextSize(Registro[18], 379.000000, 0.000000);
+
+	TextDrawSetSelectable(Registro[5], 1);
+	TextDrawSetSelectable(Registro[6], 1);
+	TextDrawSetSelectable(Registro[7], 1);
+	TextDrawSetSelectable(Registro[8], 1);
+
+	SetTimer("hora",1000,1);
+
+	SetGameModeText("[STRALIOTI] 0.1");
+	AddPlayerClass(0, 1958.3783, 1343.1572, 15.3746, 269.1425, 0, 0, 0, 0, 0, 0);
+
+	AddStaticVehicle(560,-650.0338,953.2648,11.8363,89.1446,34,17); // CARRO 1
+	AddStaticVehicle(560,-649.1215,948.1012,11.8381,89.8796,34,17); // CARRO 2
+	AddStaticVehicle(560,-649.1294,944.2753,11.8381,89.8796,34,17); // CARRO 3
+	AddStaticVehicle(468,-648.3530,963.2564,11.3940,88.0687,49,27); // MOTO 1
+	AddStaticVehicle(468,-648.2696,965.6953,11.4074,87.7955,49,27); // MOTO 2
+	AddStaticVehicle(468,-648.1522,968.7085,11.4042,87.7636,49,27); // MOTO 3
+	AddStaticVehicle(426,-2034.4573,168.1870,28.5792,270.9384,11,11); // CARRO 1 TGT
+	AddStaticVehicle(426,-2034.5299,172.6149,28.5901,270.9325,11,11); // CARRO 2 TGT
+	AddStaticVehicle(521,-2036.0078,179.8637,28.4092,271.6842,92,3); // MOTO 1 TGT
+	AddStaticVehicle(521,-2035.9353,177.3569,28.4190,271.6894,92,3); // MOTO 1 TGT
+	AddStaticVehicle(426,2505.2727,-1675.4595,13.1142,93.2120,62,62); // Carro 1 TTI
+	AddStaticVehicle(426,2504.9685,-1670.0515,13.1139,93.2222,62,62); // Carro 2 TTI
+	AddStaticVehicle(426,2504.6663,-1664.7096,13.1411,93.2162,62,62); // Carro 3 TTI
+	AddStaticVehicle(521,2494.8706,-1657.0642,12.9307,179.5098,75,13); // MOTO TTI 1
+	AddStaticVehicle(521,2490.9744,-1657.0304,12.9409,179.5043,75,13); // MOTO TTI 2
+	AddStaticVehicle(521,2487.3606,-1656.9972,12.9503,179.5200,75,13); // MOTO TTI 3
+	AddStaticVehicle(560,2227.7861,-1159.2892,25.4933,89.9428,0,2); // CARRO 1 TPI
+	AddStaticVehicle(560,2227.7832,-1162.6473,25.4842,89.9417,0,2); // CARRO TPI 2
+	AddStaticVehicle(560,2227.7803,-1166.0625,25.4749,89.9431,0,2); // CARRO 3
+	AddStaticVehicle(522,2205.7742,-1157.3494,25.3076,271.1021,50,60); // MOTO TPI 1
+	AddStaticVehicle(522,2205.8445,-1160.9905,25.3133,271.1053,50,60); // MOTO TPI 2
+	AddStaticVehicle(522,2205.9170,-1164.7578,25.3201,271.1031,50,60); // MOTO TPI 3
+	AddStaticVehicle(560,-1822.5997,-79.2030,14.8146,89.6448,0,0); // carro 1 tfi
+	AddStaticVehicle(560,-1822.6267,-83.5638,14.8266,89.6457,0,0); // carro 2 tfi
+	AddStaticVehicle(560,-1822.6512,-87.5659,14.8379,89.6444,0,0); // carro 3 tfi
+	AddStaticVehicle(522,-1821.4625,-93.8358,14.6814,95.1366,9,85); // moto TFI 1
+	AddStaticVehicle(522,-1821.2418,-96.2906,14.6814,95.1366,9,85); // moto TFI 2
+	AddStaticVehicle(522,-1820.9875,-99.1265,14.6940,95.1319,9,85); // moto TFI 3
+
+	SetTimer("@pagamento", 60000, true);
+
+	return 1;
+}
+
+public OnPlayerRequestClass(playerid, classid)
+{
+	InterpolateCameraPos(playerid, -2328.572021, 1456.048095, 141.509216, -2928.397460, 1388.436035, 164.589508, 15000);
+	InterpolateCameraLookAt(playerid, -2332.968994, 1457.633422, 139.733627, -2924.312500, 1390.837646, 162.994110, 15000);
+	return 1;
+}
+
+public OnPlayerConnect(playerid)
+{
+
+	SendClientMessage(playerid, -1,"Seja bem vindo a{FF0000} Nome do seu servidor{FFFFFF} aqui você encontra diversão !");
+	SendClientMessage(playerid, -1,"Não use nenhum tipo de hack em nosso servidor , administração está atenta.");
+	SendClientMessage(playerid, -1,"Não fazemos apologia a briga de torcidas apenas jogamos por diversão {FF0000}#PAZNOSESTADIOS");
+
+	PlayAudioStreamForPlayer(playerid, "https://dl.dropboxusercontent.com/s/beiaiyk7gwu8co8/DJ%20Cleber%20mix%20feat%20%20Edy%20Lemond%20-%20Copia%20Ai%20da%20gente%20%20%28OS%20ENVOLVIDOS%202012%29.mp3", X, Y, Z, 100.0, 1);
+
+	straliotiid[playerid] = SetTimerEx("StraliotiTag", 5000, true, "d", playerid);
+
+	new arquivoadmin[34];
+	format(arquivoadmin, sizeof(arquivoadmin), "Admins/%s.ini", PlayerNome(playerid));
+
+	new arquivoadmin2[34];
+	format(arquivoadmin2, sizeof(arquivoadmin2), "Presidentes/%s.ini", PlayerNome(playerid));
+
+	new arquivoadmin3[34];
+	format(arquivoadmin3, sizeof(arquivoadmin3), "Orgs/%s.ini", PlayerNome(playerid));
+
+	new arquivoadmin4[34];
+	format(arquivoadmin4, sizeof(arquivoadmin4), "Puxs/%s.ini", PlayerNome(playerid));
+
+	new arquivoadmin5[34];
+	format(arquivoadmin5, sizeof(arquivoadmin5), "PMs/%s.ini", PlayerNome(playerid));
+
+	new arquivoadmin6[34];
+	format(arquivoadmin6, sizeof(arquivoadmin6), "Traficantes/%s.ini", PlayerNome(playerid));
+
+	new arquivoadmin7[34];
+	format(arquivoadmin7, sizeof(arquivoadmin7), "VPresidente/%s.ini", PlayerNome(playerid));
+
+	new arquivoadmin8[34];
+	format(arquivoadmin8, sizeof(arquivoadmin8), "Reporteres/%s.ini", PlayerNome(playerid));
+
+	new arquivoadmin9[34];
+	format(arquivoadmin9, sizeof(arquivoadmin9), "Helpers/%s.ini", PlayerNome(playerid));
+
+	new arquivoadmin10[34];
+	format(arquivoadmin10, sizeof(arquivoadmin10), "Bateria/%s.ini", PlayerNome(playerid));
+
+	SelectTextDraw(playerid, 0x00EEEEFF);
+	TextDrawShowForPlayer(playerid, Registro[0]);
+	TextDrawShowForPlayer(playerid, Registro[1]);
+	TextDrawShowForPlayer(playerid, Registro[2]);
+	TextDrawShowForPlayer(playerid, Registro[3]);
+	TextDrawShowForPlayer(playerid, Registro[4]);
+	TextDrawShowForPlayer(playerid, Registro[5]);
+	TextDrawShowForPlayer(playerid, Registro[6]);
+	TextDrawShowForPlayer(playerid, Registro[7]);
+	TextDrawShowForPlayer(playerid, Registro[8]);
+	TextDrawShowForPlayer(playerid, Registro[9]);
+	TextDrawShowForPlayer(playerid, Registro[10]);
+	TextDrawShowForPlayer(playerid, Registro[11]);
+	TextDrawShowForPlayer(playerid, Registro[12]);
+	TextDrawShowForPlayer(playerid, Registro[13]);
+	TextDrawShowForPlayer(playerid, Registro[14]);
+	TextDrawShowForPlayer(playerid, Registro[15]);
+	TextDrawShowForPlayer(playerid, Registro[16]);
+	TextDrawShowForPlayer(playerid, Registro[17]);
+	TextDrawShowForPlayer(playerid, Registro[18]);
+
+	TextDrawShowForPlayer(playerid, Text:Textdraw19);
+	TextDrawShowForPlayer(playerid, Text:Textdraw20);
+	TextDrawShowForPlayer(playerid, Text:Textdraw21);
+	TextDrawShowForPlayer(playerid, Text:Textdraw22);
+	TextDrawShowForPlayer(playerid, Text:Textdraw23);
+
+	Stralioti[playerid][LerPM] = false;
+	Stralioti[playerid][BlockPM] = false;
+	Stralioti[playerid][pTorcidas] = 0;
+	IDHELPER[playerid] = 0;
+	gPlayerUsingLoopingAnim[playerid] = 0;
+
+	new string[80];
+    format(string, sizeof(string), "/vips/%s.ini", PlayerNome(playerid));
+    if(DOF2_FileExists(string))
+    {
+        Vip[playerid] = DOF2_GetInt(string,"VipExpira");
+        if(gettime() > Vip[playerid])
+        {
+            DOF2_RemoveFile(string);
+            Vip[playerid] = 0;
+            SendClientMessage(playerid, COR_ERRO, "Seu vip expirou!");
+        }
+        else
+        {
+            format(string, sizeof(string), "Seu vip expira em %s.", convertNumber(Vip[playerid]-gettime()));
+            SendClientMessage(playerid, COR_ERRO, string);
+        }
+    }
+	return 1;
+}
+
+public OnPlayerDeath(playerid, killerid, reason)
+{
+	if(gPlayerUsingLoopingAnim[playerid])
+	{
+		gPlayerUsingLoopingAnim[playerid] = 0;
+		TextDrawHideForPlayer(playerid,txtAnimHelper);
+	}
+
+	if(Acusado[playerid] == true)
+	{
+		format(stralioti, sizeof(stralioti), "O Policial %s prendeu o %s", PlayerNome(playerid), PlayerNome(Id));
+		SendClientMessageToAll(COR_KICK, stralioti);
+		SetPlayerPos(playerid, 264.9138,77.6319,1001.0391);
+	}
+	return 1;
+}
+
+public OnPlayerDisconnect(playerid, reason)
+{
+	new arquivoadmin[34];
+	format(arquivoadmin, sizeof(arquivoadmin), "Admins/%s.ini", PlayerNome(playerid));
+	if (!DOF2_FileExists(arquivoadmin)) {
+		DOF2_CreateFile(arquivoadmin);
+
+		DOF2_SetInt(arquivoadmin, "Level", Stralioti[playerid][pAdministrador]);
+		DOF2_SaveFile();
+	}
+	else {
+		DOF2_SetInt(arquivoadmin, "Level", Stralioti[playerid][pAdministrador]);
+		DOF2_SaveFile();
+	}
+
+	new arquivoadmin2[34];
+	format(arquivoadmin2, sizeof(arquivoadmin2), "Presidentes/%s.ini", PlayerNome(playerid));
+	if (!DOF2_FileExists(arquivoadmin2)) {
+		DOF2_CreateFile(arquivoadmin2);
+
+		DOF2_SetInt(arquivoadmin2, "Level", Stralioti[playerid][pPresidente]);
+		DOF2_SaveFile();
+	}
+	else {
+		DOF2_SetInt(arquivoadmin2, "Level", Stralioti[playerid][pPresidente]);
+		DOF2_SaveFile();
+	}
+
+	new arquivoadmin3[34];
+	format(arquivoadmin3, sizeof(arquivoadmin3), "Orgs/%s.ini", PlayerNome(playerid));
+	if (!DOF2_FileExists(arquivoadmin3)) {
+		DOF2_CreateFile(arquivoadmin3);
+
+		DOF2_SetInt(arquivoadmin3, "Level", Stralioti[playerid][pOrg]);
+		DOF2_SaveFile();
+	}
+	else {
+		DOF2_SetInt(arquivoadmin3, "Level", Stralioti[playerid][pOrg]);
+		DOF2_SaveFile();
+	}
+
+	new arquivoadmin4[34];
+	format(arquivoadmin4, sizeof(arquivoadmin4), "Puxs/%s.ini", PlayerNome(playerid));
+	if (!DOF2_FileExists(arquivoadmin4)) {
+		DOF2_CreateFile(arquivoadmin4);
+
+		DOF2_SetInt(arquivoadmin4, "Level", Stralioti[playerid][pPux]);
+		DOF2_SaveFile();
+	}
+	else {
+		DOF2_SetInt(arquivoadmin4, "Level", Stralioti[playerid][pPux]);
+		DOF2_SaveFile();
+	}
+
+	new arquivoadmin5[34];
+	format(arquivoadmin5, sizeof(arquivoadmin3), "PMs/%s.ini", PlayerNome(playerid));
+	if (!DOF2_FileExists(arquivoadmin5)) {
+		DOF2_CreateFile(arquivoadmin5);
+
+		DOF2_SetInt(arquivoadmin5, "Level", Stralioti[playerid][pPM]);
+		DOF2_SaveFile();
+	}
+	else {
+		DOF2_SetInt(arquivoadmin5, "Level", Stralioti[playerid][pPM]);
+		DOF2_SaveFile();
+	}
+
+	new arquivoadmin6[34];
+	format(arquivoadmin6, sizeof(arquivoadmin6), "Traficantes/%s.ini", PlayerNome(playerid));
+	if (!DOF2_FileExists(arquivoadmin6)) {
+		DOF2_CreateFile(arquivoadmin6);
+
+		DOF2_SetInt(arquivoadmin6, "Level", Stralioti[playerid][pTrafico]);
+		DOF2_SaveFile();
+	}
+	else {
+		DOF2_SetInt(arquivoadmin6, "Level", Stralioti[playerid][pTrafico]);
+		DOF2_SaveFile();
+	}
+
+	new arquivoadmin7[34];
+	format(arquivoadmin7, sizeof(arquivoadmin7), "VPresidente/%s.ini", PlayerNome(playerid));
+	if (!DOF2_FileExists(arquivoadmin7)) {
+		DOF2_CreateFile(arquivoadmin7);
+
+		DOF2_SetInt(arquivoadmin7, "Level", Stralioti[playerid][pVPresidente]);
+		DOF2_SaveFile();
+	}
+	else {
+		DOF2_SetInt(arquivoadmin7, "Level", Stralioti[playerid][pVPresidente]);
+		DOF2_SaveFile();
+	}
+
+	new arquivoadmin8[34];
+	format(arquivoadmin8, sizeof(arquivoadmin8), "Reporteres/%s.ini", PlayerNome(playerid));
+	if (!DOF2_FileExists(arquivoadmin8)) {
+		DOF2_CreateFile(arquivoadmin8);
+
+		DOF2_SetInt(arquivoadmin8, "Level", Stralioti[playerid][pReporter]);
+		DOF2_SaveFile();
+	}
+	else {
+		DOF2_SetInt(arquivoadmin8, "Level", Stralioti[playerid][pReporter]);
+		DOF2_SaveFile();
+	}
+
+	new arquivoadmin9[34];
+	format(arquivoadmin9, sizeof(arquivoadmin9), "Helpers/%s.ini", PlayerNome(playerid));
+	if (!DOF2_FileExists(arquivoadmin9)) {
+		DOF2_CreateFile(arquivoadmin9);
+
+		DOF2_SetInt(arquivoadmin9, "Level", Stralioti[playerid][pHelper]);
+		DOF2_SaveFile();
+	}
+	else {
+		DOF2_SetInt(arquivoadmin9, "Level", Stralioti[playerid][pHelper]);
+		DOF2_SaveFile();
+	}
+
+	new arquivoadmin10[34];
+	format(arquivoadmin10, sizeof(arquivoadmin10), "Bateria/%s.ini", PlayerNome(playerid));
+	if (!DOF2_FileExists(arquivoadmin10)) {
+		DOF2_CreateFile(arquivoadmin10);
+
+		DOF2_SetInt(arquivoadmin10, "Level", Stralioti[playerid][pBtr]);
+		DOF2_SaveFile();
+	}
+	else {
+		DOF2_SetInt(arquivoadmin10, "Level", Stralioti[playerid][pBtr]);
+		DOF2_SaveFile();
+	}
+
+	Stralioti[playerid][LerPM] = false;
+	Stralioti[playerid][BlockPM] = false;
+	Stralioti[playerid][pTorcidas] = 0;
+	IDHELPER[playerid] = 0;
+	new Torcida = Stralioti[playerid][pTorcidas];
+	NumeroPlayers[Torcida - 1]--;
+	if(playerid == HighestID)
+	{
+
+
+		new highID=0;
+		for(new x=0; x < MAX_PLAYERS; x++)
+		{
+
+
+			if(IsPlayerConnected(x))
+			{
+
+
+				if(x>highID) {
+					highID = x;
+				}
+			}
+		}
+		HighestID = highID;
+	}
+
+	SavePlayer(playerid);
+	return 1;
+}
+
+public OnPlayerClickTextDraw(playerid, Text:clickedid)
+{
+	GetPlayerName(playerid, Nome, sizeof(Nome));
+	format(Arquivo, sizeof(Arquivo), "Registros/%s.ini", Nome);
+	GetPlayerIp(playerid, IP, sizeof(IP));
+
+	if(clickedid == Registro[5] )
+	{
+
+
+
+
+
+		if(DOF2_FileExists(Arquivo))
+		{
+
+
+
+
+
+			SendClientMessage(playerid, COR_AVISO, "| AVISO | Atenção Você ja tem uma Conta, Clique em Logar para Logar.");
+		}
+		else
+		{
+
+
+
+
+
+			format(String, sizeof(String), "{F8F8FF}Bem Vindo ao Servidor {FF4040}%s{F8F8FF}\n\nVocê ainda nao tem uma Conta Registrada\n\nDigite Digite uma Senha para se Registrar\n\nStatus: {FF4040}N/A Registrado.\n\n{F8F8FF}IP:{FF4040}%s", Nome, IP);
+			ShowPlayerDialog(playerid, DIALOG_REGISTRO, DIALOG_STYLE_PASSWORD, "-- REGISTRANDO --", String, "Registrar", "Cancelar");
+		}
+	}
+	if(clickedid == Registro[6])
+	{
+
+
+
+
+
+		if(DOF2_FileExists(Arquivo))
+		{
+
+
+
+
+
+			format(String, sizeof(String), "{F8F8FF}Bem Vindo ao Servidor {FF4040}%s{F8F8FF}\n\nVocê ja tem uma Conta Registrada\n\nDigite sua senha para Logar\n\nStatus:{FF4040}Registrado.\n\n{F8F8FF}IP:{FF4040}%s", Nome, IP);
+			ShowPlayerDialog(playerid, DIALOG_LOGIN, DIALOG_STYLE_PASSWORD, "-- LOGANDO --", String, "Logar", "Cancelar");
+		}
+		else
+		{
+
+
+
+
+
+			SendClientMessage(playerid, COR_AVISO, "| AVISO | Atenção Você não tem uma Conta, Clique em Registrar para Registrar.");
+		}
+	}
+	if(clickedid == Registro[7])
+	{
+
+
+
+
+
+		SendClientMessage(playerid, COR_AVISO, "| AVISO | INFO.");
+	}
+	if(clickedid == Registro[8])
+	{
+
+
+
+
+
+		format(String, sizeof(String), "| INFO | O Jogador(a) %s Saiu do Servidor", Nome);
+		SendClientMessageToAll(COR_AZUL_ADMIN, String);
+	}
+	return 1;
+}
+
+public OnPlayerClickPlayer(playerid, clickedplayerid, source)
+{
+	return 1;
+}
+
+public OnPlayerSpawn(playerid)
+{
+	SetPlayerSkin(playerid, Skin[playerid]);
+	TextDrawHideForPlayer(playerid, Registro[0]);
+	TextDrawHideForPlayer(playerid, Registro[1]);
+	TextDrawHideForPlayer(playerid, Registro[2]);
+	TextDrawHideForPlayer(playerid, Registro[3]);
+	TextDrawHideForPlayer(playerid, Registro[4]);
+	TextDrawHideForPlayer(playerid, Registro[5]);
+	TextDrawHideForPlayer(playerid, Registro[6]);
+	TextDrawHideForPlayer(playerid, Registro[7]);
+	TextDrawHideForPlayer(playerid, Registro[8]);
+	TextDrawHideForPlayer(playerid, Registro[9]);
+	TextDrawHideForPlayer(playerid, Registro[10]);
+	TextDrawHideForPlayer(playerid, Registro[11]);
+	TextDrawHideForPlayer(playerid, Registro[12]);
+	TextDrawHideForPlayer(playerid, Registro[13]);
+	TextDrawHideForPlayer(playerid, Registro[14]);
+	TextDrawHideForPlayer(playerid, Registro[15]);
+	TextDrawHideForPlayer(playerid, Registro[16]);
+	TextDrawHideForPlayer(playerid, Registro[17]);
+	TextDrawHideForPlayer(playerid, Registro[18]);
+
+	if(Vip[playerid] > 0)
+    {
+        if(gettime() > Vip[playerid])
+        {
+            new string[40];
+            format(string, sizeof(string), "/vips/%s.ini", PlayerNome(playerid));
+            DOF2_RemoveFile(string);
+            Vip[playerid] = 0;
+            SendClientMessage(playerid, 0xF6FF00AA, "* Seu vip expirou!");
+        }
+        else
+        {
+            SetPlayerArmour(playerid, 100);
+            SetPlayerHealth(playerid, 100);
+        }
+    }
+
+	new Torcida = Stralioti[playerid][pTorcidas];
+	NumeroPlayers[Torcida - 1]++;
+	//--------------------------------------------//
+	if(Stralioti[playerid][pTorcidas] == 1)
+	{
+
+
+		TogglePlayerControllable(playerid, 1);
+		SetPlayerPos(playerid,-2023.5206, 156.3955, 28.8359);
+		SetPlayerFacingAngle(playerid, 139.8051);
+		SetPlayerInterior(playerid, 0);
+		SetPlayerColor(playerid, COR_TGT);
+		SetPlayerSkin(playerid, 101);
+	}
+	//TGT
+	if(Stralioti[playerid][pTorcidas] == 2)
+	{
+
+
+		TogglePlayerControllable(playerid, 1);
+		SetPlayerPos(playerid,-2023.5206, 156.3955, 28.8359);
+		SetPlayerFacingAngle(playerid, 139.8051);
+		SetPlayerInterior(playerid, 0);
+		SetPlayerColor(playerid, COR_TOIC);
+		SetPlayerSkin(playerid, 0);
+	}
+	//TOIC
+	if(Stralioti[playerid][pTorcidas] == 3)
+	{
+
+
+		TogglePlayerControllable(playerid, 1);
+		SetPlayerPos(playerid,2798.7351,1256.2622,11.0299);
+		SetPlayerFacingAngle(playerid, 139.8051);
+		SetPlayerInterior(playerid, 0);
+		SetPlayerColor(playerid, COR_TOIC);
+		SetPlayerSkin(playerid, 0);
+	}
+	//MCR
+	if(Stralioti[playerid][pTorcidas] == 4)
+	{
+
+
+		TogglePlayerControllable(playerid, 1);
+		SetPlayerPos(playerid,2495.1240,-1686.4613,13.5136);
+		SetPlayerFacingAngle(playerid, 139.8051);
+		SetPlayerInterior(playerid, 0);
+		SetPlayerColor(playerid, COR_UPC);
+		SetPlayerSkin(playerid, 0);
+	}
+	//TTI
+	if(Stralioti[playerid][pTorcidas] == 5)
+	{
+
+
+		TogglePlayerControllable(playerid, 1);
+		SetPlayerPos(playerid,2216.4272,-1169.1475,25.7266);
+		SetPlayerFacingAngle(playerid, 139.8051);
+		SetPlayerInterior(playerid, 0);
+		SetPlayerColor(playerid, COR_UPC);
+		SetPlayerSkin(playerid, 155);
+	}
+	//TPI
+	if(Stralioti[playerid][pTorcidas] == 6)
+	{
+
+
+		TogglePlayerControllable(playerid, 1);
+		SetPlayerPos(playerid,-1831.1797,-42.9260,15.1094);
+		SetPlayerFacingAngle(playerid, 139.8051);
+		SetPlayerInterior(playerid, 0);
+		SetPlayerColor(playerid, COR_PCA);
+		SetPlayerSkin(playerid, 155);
+	}
+	//TFI
+	if(Stralioti[playerid][pTorcidas] == 7)
+	{
+
+
+		TogglePlayerControllable(playerid, 1);
+		SetPlayerPos(playerid,2090.7610,2224.0571,11.0234);
+		SetPlayerFacingAngle(playerid, 139.8051);
+		SetPlayerInterior(playerid, 0);
+		SetPlayerColor(playerid, COR_UPC);
+		SetPlayerSkin(playerid, 0);
+	}
+	//TUI
+	if(Stralioti[playerid][pTorcidas] == 8)
+	{
+
+
+		TogglePlayerControllable(playerid, 1);
+		SetPlayerPos(playerid,2566.4116,1397.6351,11.0294);
+		SetPlayerFacingAngle(playerid, 139.8051);
+		SetPlayerInterior(playerid, 0);
+		SetPlayerColor(playerid, COR_LDB);
+		SetPlayerSkin(playerid, 0);
+	}
+	//TOC
+	if(Stralioti[playerid][pTorcidas] == 10)
+	{
+
+
+		TogglePlayerControllable(playerid, 1);
+		SetPlayerPos(playerid,1679.7507,13.5469,275.7722);
+		SetPlayerFacingAngle(playerid, 139.8051);
+		SetPlayerInterior(playerid, 0);
+		SetPlayerColor(playerid, COR_MVP);
+		SetPlayerSkin(playerid, 0);
+	}
+	//P9
+	if(Stralioti[playerid][pTorcidas] == 11)
+	{
+
+
+		TogglePlayerControllable(playerid, 1);
+		SetPlayerPos(playerid,1679.7507,13.5469,275.7722);
+		SetPlayerFacingAngle(playerid, 139.8051);
+		SetPlayerInterior(playerid, 0);
+		SetPlayerColor(playerid, COR_TGT);
+		SetPlayerSkin(playerid, 0);
+	}
+	//GDF
+	if(Stralioti[playerid][pTorcidas] == 12)
+	{
+
+
+		TogglePlayerControllable(playerid, 1);
+		SetPlayerPos(playerid,1679.7507,13.5469,275.7722);
+		SetPlayerFacingAngle(playerid, 139.8051);
+		SetPlayerInterior(playerid, 0);
+		SetPlayerColor(playerid, COR_PDA);
+		SetPlayerSkin(playerid, 0);
+	}
+	//CMA
+	if(Stralioti[playerid][pTorcidas] == 13)
+	{
+
+
+		TogglePlayerControllable(playerid, 1);
+		SetPlayerPos(playerid,1679.7507,13.5469,275.7722);
+		SetPlayerFacingAngle(playerid, 139.8051);
+		SetPlayerInterior(playerid, 0);
+		SetPlayerColor(playerid, COR_TOIC);
+		SetPlayerSkin(playerid, 0);
+	}
+	//TOB
+	if(Stralioti[playerid][pTorcidas] == 14)
+	{
+
+
+		TogglePlayerControllable(playerid, 1);
+		SetPlayerPos(playerid,1679.7507,13.5469,275.7722);
+		SetPlayerFacingAngle(playerid, 139.8051);
+		SetPlayerInterior(playerid, 0);
+		SetPlayerColor(playerid, COR_UPC);
+		SetPlayerSkin(playerid, 0);
+	}
+	//TJS
+	if(Stralioti[playerid][pTorcidas] == 15)
+	{
+
+
+		TogglePlayerControllable(playerid, 1);
+		SetPlayerPos(playerid,1679.7507,13.5469,275.7722); //SEM SAVE
+		SetPlayerFacingAngle(playerid, 139.8051);
+		SetPlayerInterior(playerid, 0);
+		SetPlayerColor(playerid, COR_UPC);
+		SetPlayerSkin(playerid, 0);
+	}
+	//TJF
+	return 1;
+}
+
+public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
+{
+
+	if(dialogid == Torcidas)
+	{
+
+
+		if(response)
+		{
+
+
+			if(listitem == 0)
+			{
+
+
+				ShowPlayerDialog(playerid, SUDESTE, DIALOG_STYLE_LIST, "SUDESTE", "Rio de Janeiro\nSão Paulo\nMinas Gerais", "Escolher", "Sair");
+			}
+			if(listitem == 1)
+			{
+
+
+				ShowPlayerDialog(playerid, SUL, DIALOG_STYLE_LIST, "SUL/CENTRO", "Paraná", "Escolher", "Sair");
+			}
+			if(listitem == 2)
+			{
+
+
+				ShowPlayerDialog(playerid, NORTE, DIALOG_STYLE_LIST, "Norte/Nordeste", "Bahia\nPernambuco\nCeára", "Escolher", "Sair");
+			}
+		}
+	}
+
+	if(dialogid == SUDESTE)
+	{
+
+
+		if(response)
+		{
+
+
+			if(listitem == 0)
+			{
+
+
+				ShowPlayerDialog(playerid, RJ, DIALOG_STYLE_LIST, "Rio de Janeiro", "Torcida Jovem Flamengo\nYoung Flu", "Escolher", "Sair");
+			}
+			if(listitem == 1)
+			{
+
+
+				ShowPlayerDialog(playerid, SP, DIALOG_STYLE_LIST, "São Paulo", "Torcida Tricolor Independente\nPavilhão 9\n Gaviões da Fiel", "Escolher", "Sair");
+			}
+			if(listitem == 2)
+			{
+
+
+				ShowPlayerDialog(playerid, MG, DIALOG_STYLE_LIST, "Minas Gerais", "Comando Máfia Azul\nPavilhão Independente", "Escolher", "Sair");
+			}
+		}
+	}
+
+	if(dialogid == RJ)
+	{
+
+
+		if(response)
+		{
+
+
+			if(listitem == 0)
+			{
+                Stralioti[playerid][pTorcidas] = 15;
+				SetPlayerSkin(playerid, 107);
+
+				new dialogrande[1027];
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Ótimo, agora que você escolheu sua torcida, vamo as regras:\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"\nAtropelar - Punição: 20 Minutos Preso;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Usar xiter - Punição: Ban Eterno;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Agredir aliados - Punição: 1º vez Kick, 2º vez 20 Minutos Preso;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Divulgar outros servidores - Punição: Ban Eterno;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Usar 'ESC' em confrontos - Punição: Kick;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Ofender ninguém com ato de racismo - Punição: 10 dias banido;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Usar (/kill) em fuga - Punição: 20 Minutos Preso;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Não agredir repórteres em trabalho - Punição: 1º vez Kick, 2º vez 20 Minutos Preso;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Respeitar administradores - Punição: 1º vez Kick, 2º vez ban 10 dias;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"\nAceita as regras?\n");
+				ShowPlayerDialog(playerid,6, DIALOG_STYLE_MSGBOX, "TORCIDAS - TUTORIAL", dialogrande, "Aceito", "Não");
+			}
+			if(listitem == 1)
+			{
+
+
+			}
+			if(listitem == 2)
+			{
+
+
+
+			}
+		}
+	}
+
+	if(dialogid == SP)
+	{
+
+
+		if(response)
+		{
+
+
+			if(listitem == 0)
+			{
+			    Stralioti[playerid][pTorcidas] = 4;
+				SetPlayerSkin(playerid, 0);
+
+				new dialogrande[1027];
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Ótimo, agora que você escolheu sua torcida, vamo as regras:\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"\nAtropelar - Punição: 20 Minutos Preso;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Usar xiter - Punição: Ban Eterno;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Agredir aliados - Punição: 1º vez Kick, 2º vez 20 Minutos Preso;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Divulgar outros servidores - Punição: Ban Eterno;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Usar 'ESC' em confrontos - Punição: Kick;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Ofender ninguém com ato de racismo - Punição: 10 dias banido;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Usar (/kill) em fuga - Punição: 20 Minutos Preso;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Não agredir repórteres em trabalho - Punição: 1º vez Kick, 2º vez 20 Minutos Preso;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Respeitar administradores - Punição: 1º vez Kick, 2º vez ban 10 dias;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"\nAceita as regras?\n");
+				ShowPlayerDialog(playerid,6, DIALOG_STYLE_MSGBOX, " TORCIDAS - TUTORIAL", dialogrande, "Aceito", "Não");
+			}
+			if(listitem == 1)
+			{
+                Stralioti[playerid][pTorcidas] = 9;
+				SetPlayerSkin(playerid, 0);
+
+				new dialogrande[1027];
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Ótimo, agora que você escolheu sua torcida, vamo as regras:\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"\nAtropelar - Punição: 20 Minutos Preso;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Usar xiter - Punição: Ban Eterno;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Agredir aliados - Punição: 1º vez Kick, 2º vez 20 Minutos Preso;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Divulgar outros servidores - Punição: Ban Eterno;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Usar 'ESC' em confrontos - Punição: Kick;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Ofender ninguém com ato de racismo - Punição: 10 dias banido;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Usar (/kill) em fuga - Punição: 20 Minutos Preso;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Não agredir repórteres em trabalho - Punição: 1º vez Kick, 2º vez 20 Minutos Preso;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Respeitar administradores - Punição: 1º vez Kick, 2º vez ban 10 dias;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"\nAceita as regras?\n");
+				ShowPlayerDialog(playerid,6, DIALOG_STYLE_MSGBOX, " TORCIDAS - TUTORIAL", dialogrande, "Aceito", "Não");
+			}
+			if(listitem == 2)
+			{
+
+			}
+		}
+	}
+
+	if(dialogid == MG)
+	{
+
+
+		if(response)
+		{
+
+
+			if(listitem == 0)
+			{
+                Stralioti[playerid][pTorcidas] = 12;
+				SetPlayerSkin(playerid, 155);
+
+				new dialogrande[1027];
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Ótimo, agora que você escolheu sua torcida, vamo as regras:\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"\nAtropelar - Punição: 20 Minutos Preso;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Usar xiter - Punição: Ban Eterno;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Agredir aliados - Punição: 1º vez Kick, 2º vez 20 Minutos Preso;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Divulgar outros servidores - Punição: Ban Eterno;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Usar 'ESC' em confrontos - Punição: Kick;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Ofender ninguém com ato de racismo - Punição: 10 dias banido;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Usar (/kill) em fuga - Punição: 20 Minutos Preso;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Não agredir repórteres em trabalho - Punição: 1º vez Kick, 2º vez 20 Minutos Preso;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Respeitar administradores - Punição: 1º vez Kick, 2º vez ban 10 dias;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"\nAceita as regras?\n");
+				ShowPlayerDialog(playerid,6, DIALOG_STYLE_MSGBOX, " TORCIDAS - TUTORIAL", dialogrande, "Aceito", "Não");
+				//CMA
+			}
+			if(listitem == 1)
+			{
+                Stralioti[playerid][pTorcidas] = 5;
+				SetPlayerSkin(playerid, 155);
+
+				new dialogrande[1027];
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Ótimo, agora que você escolheu sua torcida, vamo as regras:\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"\nAtropelar - Punição: 20 Minutos Preso;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Usar xiter - Punição: Ban Eterno;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Agredir aliados - Punição: 1º vez Kick, 2º vez 20 Minutos Preso;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Divulgar outros servidores - Punição: Ban Eterno;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Usar 'ESC' em confrontos - Punição: Kick;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Ofender ninguém com ato de racismo - Punição: 10 dias banido;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Usar (/kill) em fuga - Punição: 20 Minutos Preso;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Não agredir repórteres em trabalho - Punição: 1º vez Kick, 2º vez 20 Minutos Preso;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Respeitar administradores - Punição: 1º vez Kick, 2º vez ban 10 dias;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"\nAceita as regras?\n");
+				ShowPlayerDialog(playerid,6, DIALOG_STYLE_MSGBOX, " TORCIDAS - TUTORIAL", dialogrande, "Aceito", "Não");
+				//TPI
+			}
+			if(listitem == 2)
+			{
+
+
+
+			}
+		}
+	}
+
+	if(dialogid == SUL)
+	{
+
+
+		if(response)
+		{
+
+
+			if(listitem == 0)
+			{
+
+
+				ShowPlayerDialog(playerid, PR, DIALOG_STYLE_LIST, "PARANA", "Torcida Galo Terror\nTorcida Fúria Independente", "Escolher", "Sair");
+			}
+			if(listitem == 1)
+			{
+
+
+
+			}
+			if(listitem == 2)
+			{
+
+
+
+			}
+		}
+	}
+
+	if(dialogid == PR)
+	{
+
+
+		if(response)
+		{
+
+
+			if(listitem == 0)
+			{
+  				Stralioti[playerid][pTorcidas] = 1;
+				SetPlayerSkin(playerid, 101);
+
+				new dialogrande[1027];
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Ótimo, agora que você escolheu sua torcida, vamo as regras:\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"\nAtropelar - Punição: 20 Minutos Preso;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Usar xiter - Punição: Ban Eterno;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Agredir aliados - Punição: 1º vez Kick, 2º vez 20 Minutos Preso;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Divulgar outros servidores - Punição: Ban Eterno;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Usar 'ESC' em confrontos - Punição: Kick;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Ofender ninguém com ato de racismo - Punição: 10 dias banido;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Usar (/kill) em fuga - Punição: 20 Minutos Preso;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Não agredir repórteres em trabalho - Punição: 1º vez Kick, 2º vez 20 Minutos Preso;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Respeitar administradores - Punição: 1º vez Kick, 2º vez ban 10 dias;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"\nAceita as regras?\n");
+				ShowPlayerDialog(playerid,6, DIALOG_STYLE_MSGBOX, " TORCIDAS - TUTORIAL", dialogrande, "Aceito", "Não");
+			}
+			if(listitem == 1)
+			{
+                Stralioti[playerid][pTorcidas] = 6;
+				SetPlayerSkin(playerid, 0);
+
+				new dialogrande[1027];
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Ótimo, agora que você escolheu sua torcida, vamo as regras:\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"\nAtropelar - Punição: 20 Minutos Preso;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Usar xiter - Punição: Ban Eterno;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Agredir aliados - Punição: 1º vez Kick, 2º vez 20 Minutos Preso;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Divulgar outros servidores - Punição: Ban Eterno;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Usar 'ESC' em confrontos - Punição: Kick;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Ofender ninguém com ato de racismo - Punição: 10 dias banido;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Usar (/kill) em fuga - Punição: 20 Minutos Preso;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Não agredir repórteres em trabalho - Punição: 1º vez Kick, 2º vez 20 Minutos Preso;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Respeitar administradores - Punição: 1º vez Kick, 2º vez ban 10 dias;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"\nAceita as regras?\n");
+				ShowPlayerDialog(playerid,6, DIALOG_STYLE_MSGBOX, " TORCIDAS - TUTORIAL", dialogrande, "Aceito", "Não");
+			}
+			if(listitem == 2)
+			{
+
+
+
+			}
+		}
+	}
+
+	if(dialogid == NORTE)
+	{
+
+
+		if(response)
+		{
+
+
+			if(listitem == 0)
+			{
+
+
+				ShowPlayerDialog(playerid, BAHIA, DIALOG_STYLE_LIST, "Bahia", "Torcida Organizada Bamor\nTorcida Uniformizada Os Imbativeis", "Escolher", "Sair");
+			}
+			if(listitem == 1)
+			{
+
+
+				ShowPlayerDialog(playerid, PE, DIALOG_STYLE_LIST, "Pernambuco", "Torcida Organizada Inferno Coral\nTorcida Organizada Jovem Sport\n", "Escolher", "Sair");
+			}
+			if(listitem == 2)
+			{
+
+
+				ShowPlayerDialog(playerid, CE, DIALOG_STYLE_LIST, "Ceara", "Torcida Organizada Cearamor", "Escolher", "Sair");
+			}
+		}
+	}
+
+	if(dialogid == BAHIA)
+	{
+
+
+		if(response)
+		{
+
+
+			if(listitem == 0)
+			{
+
+                Stralioti[playerid][pTorcidas] = 13;
+				SetPlayerSkin(playerid, 101);
+
+				new dialogrande[1027];
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Ótimo, agora que você escolheu sua torcida, vamo as regras:\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"\nAtropelar - Punição: 20 Minutos Preso;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Usar xiter - Punição: Ban Eterno;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Agredir aliados - Punição: 1º vez Kick, 2º vez 20 Minutos Preso;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Divulgar outros servidores - Punição: Ban Eterno;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Usar 'ESC' em confrontos - Punição: Kick;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Ofender ninguém com ato de racismo - Punição: 10 dias banido;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Usar (/kill) em fuga - Punição: 20 Minutos Preso;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Não agredir repórteres em trabalho - Punição: 1º vez Kick, 2º vez 20 Minutos Preso;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Respeitar administradores - Punição: 1º vez Kick, 2º vez ban 10 dias;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"\nAceita as regras?\n");
+				ShowPlayerDialog(playerid,6, DIALOG_STYLE_MSGBOX, " TORCIDAS - TUTORIAL", dialogrande, "Aceito", "Não");
+
+			}
+			if(listitem == 1)
+			{
+                Stralioti[playerid][pTorcidas] = 7;
+				SetPlayerSkin(playerid, 101);
+
+				new dialogrande[1027];
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Ótimo, agora que você escolheu sua torcida, vamo as regras:\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"\nAtropelar - Punição: 20 Minutos Preso;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Usar xiter - Punição: Ban Eterno;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Agredir aliados - Punição: 1º vez Kick, 2º vez 20 Minutos Preso;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Divulgar outros servidores - Punição: Ban Eterno;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Usar 'ESC' em confrontos - Punição: Kick;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Ofender ninguém com ato de racismo - Punição: 10 dias banido;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Usar (/kill) em fuga - Punição: 20 Minutos Preso;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Não agredir repórteres em trabalho - Punição: 1º vez Kick, 2º vez 20 Minutos Preso;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Respeitar administradores - Punição: 1º vez Kick, 2º vez ban 10 dias;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"\nAceita as regras?\n");
+				ShowPlayerDialog(playerid,6, DIALOG_STYLE_MSGBOX, " TORCIDAS - TUTORIAL", dialogrande, "Aceito", "Não");
+			}
+			if(listitem == 2)
+			{
+
+
+
+			}
+		}
+	}
+
+	if(dialogid == PE)
+	{
+
+
+		if(response)
+		{
+
+
+			if(listitem == 0)
+			{
+                Stralioti[playerid][pTorcidas] = 2;
+				SetPlayerSkin(playerid, 0);
+
+				new dialogrande[1027];
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Ótimo, agora que você escolheu sua torcida, vamo as regras:\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"\nAtropelar - Punição: 20 Minutos Preso;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Usar xiter - Punição: Ban Eterno;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Agredir aliados - Punição: 1º vez Kick, 2º vez 20 Minutos Preso;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Divulgar outros servidores - Punição: Ban Eterno;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Usar 'ESC' em confrontos - Punição: Kick;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Ofender ninguém com ato de racismo - Punição: 10 dias banido;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Usar (/kill) em fuga - Punição: 20 Minutos Preso;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Não agredir repórteres em trabalho - Punição: 1º vez Kick, 2º vez 20 Minutos Preso;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Respeitar administradores - Punição: 1º vez Kick, 2º vez ban 10 dias;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"\nAceita as regras?\n");
+				ShowPlayerDialog(playerid,6, DIALOG_STYLE_MSGBOX, " TORCIDAS - TUTORIAL", dialogrande, "Aceito", "Não");
+			}
+			if(listitem == 1)
+			{
+
+
+                Stralioti[playerid][pTorcidas] = 14;
+				SetPlayerSkin(playerid, 0);
+
+				new dialogrande[1027];
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Ótimo, agora que você escolheu sua torcida, vamo as regras:\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"\nAtropelar - Punição: 20 Minutos Preso;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Usar xiter - Punição: Ban Eterno;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Agredir aliados - Punição: 1º vez Kick, 2º vez 20 Minutos Preso;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Divulgar outros servidores - Punição: Ban Eterno;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Usar 'ESC' em confrontos - Punição: Kick;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Ofender ninguém com ato de racismo - Punição: 10 dias banido;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Usar (/kill) em fuga - Punição: 20 Minutos Preso;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Não agredir repórteres em trabalho - Punição: 1º vez Kick, 2º vez 20 Minutos Preso;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Respeitar administradores - Punição: 1º vez Kick, 2º vez ban 10 dias;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"\nAceita as regras?\n");
+				ShowPlayerDialog(playerid,6, DIALOG_STYLE_MSGBOX, " TORCIDAS - TUTORIAL", dialogrande, "Aceito", "Não");
+			}
+			if(listitem == 2)
+			{
+
+
+
+			}
+		}
+	}
+
+	if(dialogid == CE)
+	{
+
+
+		if(response)
+		{
+
+
+			if(listitem == 0)
+			{
+                Stralioti[playerid][pTorcidas] = 8;
+				SetPlayerSkin(playerid, 0);
+
+				new dialogrande[1027];
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Ótimo, agora que você escolheu sua torcida, vamo as regras:\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"\nAtropelar - Punição: 20 Minutos Preso;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Usar xiter - Punição: Ban Eterno;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Agredir aliados - Punição: 1º vez Kick, 2º vez 20 Minutos Preso;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Divulgar outros servidores - Punição: Ban Eterno;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Usar 'ESC' em confrontos - Punição: Kick;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Ofender ninguém com ato de racismo - Punição: 10 dias banido;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Usar (/kill) em fuga - Punição: 20 Minutos Preso;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Não agredir repórteres em trabalho - Punição: 1º vez Kick, 2º vez 20 Minutos Preso;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"Respeitar administradores - Punição: 1º vez Kick, 2º vez ban 10 dias;\n");
+				format(dialogrande, sizeof(dialogrande),"%s%s",dialogrande,"\nAceita as regras?\n");
+				ShowPlayerDialog(playerid,6, DIALOG_STYLE_MSGBOX, " TORCIDAS - TUTORIAL", dialogrande, "Aceito", "Não");
+			}
+			if(listitem == 1)
+			{
+
+
+
+			}
+			if(listitem == 2)
+			{
+
+
+
+			}
+		}
+	}
+
+
+	if(dialogid == MUDARLUTA)
+	{
+
+
+
+		if(response)
+		{
+
+
+
+			if(listitem == 0)
+			{
+
+
+
+				SetPlayerFightingStyle (playerid, FIGHT_STYLE_KUNGFU);
+			}
+			if(listitem == 1)
+			{
+
+
+
+				SetPlayerFightingStyle (playerid, FIGHT_STYLE_GRABKICK);
+			}
+			if(listitem == 2)
+			{
+
+
+
+				SetPlayerFightingStyle (playerid, FIGHT_STYLE_ELBOW);
+			}
+		}
+	}
+
+	if(dialogid == 888)
+	{
+
+
+
+		if(response == 0)
+		{
+
+
+
+			SendClientMessage(IDHELPER[playerid], COR_HELPER, "O player não reconheceu a sua ajuda!");
+			SendClientMessage(playerid, -1, "Você não reconheceu a ajuda.");
+			IDHELPER[IDHELPER[playerid]] = 0;
+			IDHELPER[playerid] = 0;
+			return 1;
+		}
+		if(response == 1)
+		{
+
+
+
+			SendClientMessage(playerid, -1, "[INFO] Obrigado, caso tenha alguma outra dúvida, mande /duvida que ajudaremos!");
+			SendClientMessage(IDHELPER[playerid], -1, "[INFO] O player reconheceu a sua ajuda!");
+			Stralioti[IDHELPER[playerid]][pHelper] ++;
+			IDHELPER[IDHELPER[playerid]] = 0;
+			IDHELPER[playerid] = 0;
+			return 1;
+		}
+	}
+
+	if(dialogid == ANUNCIAR)
+	{
+		if(response)
+		{
+			if(listitem == 0)
+			{
+				format(stralioti, sizeof(stralioti),"%s Chamou outra Torcida para X3 [/PM %d]", PlayerNome(playerid), Id);
+				SendClientMessageToAll(COR_AMARELO, stralioti);
+			}
+			if(listitem == 1)
+			{
+				format(stralioti, sizeof(stralioti),"%s Chamou outra Torcida para CF [/PM %d]", PlayerNome(playerid), Id);
+				SendClientMessageToAll(COR_AMARELO, stralioti);
+			}
+			if(listitem == 2)
+			{
+				format(stralioti, sizeof(stralioti),"%s Chamou outra Torcida para Treta [/PM %d]", PlayerNome(playerid), Id);
+				SendClientMessageToAll(COR_AMARELO, stralioti);
+			}
+		}
+	}
+
+	if(dialogid == ARMAS)
+	{
+		if(response)
+		{
+			if(listitem == 0)
+			{
+				GivePlayerWeapon(playerid, 1,99999);
+			}
+			if(listitem == 1)
+			{
+				GivePlayerWeapon(playerid, 2,99999);
+			}
+			if(listitem == 2)
+			{
+
+				GivePlayerWeapon(playerid, 46,99999);
+			}
+			if(listitem == 3)
+			{
+				GivePlayerWeapon(playerid, 29,99999);
+			}
+			if(listitem == 4)
+			{
+				GivePlayerWeapon(playerid, 4,99999);
+			}
+			if(listitem == 5)
+			{
+				GivePlayerWeapon(playerid, 8,99999);
+			}
+			if(listitem == 6)
+			{
+				GivePlayerWeapon(playerid, 24,99999);
+			}
+			if(listitem == 7)
+			{
+				GivePlayerWeapon(playerid, 25,99999);
+			}
+			if(listitem == 8)
+			{
+				GivePlayerWeapon(playerid, 27,99999);
+			}
+			if(listitem == 9)
+			{
+				GivePlayerWeapon(playerid, 34,99999);
+			}
+		}
+	}
+
+	if(dialogid == VEH)
+	{
+		if(response)
+		{
+			if(listitem == 0)
+			{
+
+				GetPlayerPos(playerid, X, Y, Z);
+				GetPlayerFacingAngle(playerid, Angle);
+				CreateVehicle(560, X+5, Y, Z+1, Angle, random(100), random(100), -1);
+				SendClientMessage(playerid, -1,"Você criou um sultan para deleta-lo use /dc ou /dcm");
+			}
+			if(listitem == 1)
+			{
+				GetPlayerPos(playerid, X, Y, Z);
+				GetPlayerFacingAngle(playerid, Angle);
+				CreateVehicle(411, X+5, Y, Z+1, Angle, random(100), random(100), -1);
+				SendClientMessage(playerid, -1,"Você criou um infernus para deleta-lo use /dc ou /dcm");
+			}
+			if(listitem == 2)
+			{
+				GetPlayerPos(playerid, X, Y, Z);
+				GetPlayerFacingAngle(playerid, Angle);
+				CreateVehicle(522, X+5, Y, Z+1, Angle, random(100), random(100), -1);
+				SendClientMessage(playerid, -1,"Você criou um nrg-500 para deleta-lo use /dc ou /dcm");
+			}
+			if(listitem == 3)
+			{
+				GetPlayerPos(playerid, X, Y, Z);
+				GetPlayerFacingAngle(playerid, Angle);
+				CreateVehicle(431, X+5, Y, Z+1, Angle, random(100), random(100), -1);
+				SendClientMessage(playerid, -1,"Você criou um onibus para deleta-lo use /dc ou /dcm");
+			}
+			if(listitem == 4)
+			{
+				GetPlayerPos(playerid, X, Y, Z);
+				GetPlayerFacingAngle(playerid, Angle);
+				CreateVehicle(506, X+5, Y, Z+1, Angle, random(100), random(100), -1);
+				SendClientMessage(playerid, -1,"Você criou um super-gt para deleta-lo use /dc ou /dcm");
+			}
+		}
+	}
+
+	if(dialogid == DIALOG_ENQUETE)
+	{
+		if(!response)
+		return SendClientMessage(playerid, COR_ERRO, "Você cancelou a criada da enquete.");
+
+		SendClientMessageToAll(COR_TEXTO, " ");
+		SendClientMessageToAll(COR_TEXTO, "=============================================================================================");
+		format(SringEnquete,128, "{f6ff00}* O %s %s acaba de abrir uma enquete:", PlayerNome(playerid), PlayerNome(playerid));
+		SendClientMessageToAll(COR_AMARELO, SringEnquete);
+		format(SringEnquete,128, "{f6ff00}* Perguntando: %s", inputtext);
+		SendClientMessageToAll(COR_AMARELO, SringEnquete);
+		SendClientMessageToAll(COR_AMARELO, "Vote /sim ou /nao");
+		SendClientMessageToAll(COR_TEXTO, "=============================================================================================");
+
+		EnqueteAberta = true;
+		format(NomeEnquete, 128, "%s", inputtext);
+
+		SendClientMessage(playerid,COR_AMARELO, "[ENQUETE] Caso queira fechar enquete digite /fechar");
+
+		new string[128];
+		format(string, sizeof(string), "%s criou uma enquete perguntando: %s.", PlayerNome(playerid), inputtext);
+		return true;
+	}
+
+	if(dialogid == DIALOG_REGISTRO)
+	{
+
+		if(response)
+		{
+			if(strlen(inputtext) < 5 || strlen(inputtext) > 16 && !strlen(inputtext))
+			{
+				SendClientMessage(playerid, COR_AVISO,"| AVISO | Atenção a Senha tem que ter no Minimo 5 Caracteres ou no Máximo 16 Caracteres.");
+				format(String, sizeof(String), "{F8F8FF}Bem Vindo ao Servidor {FF4040}%s{F8F8FF}\n\nVocê ainda nao tem uma Conta Registrada\n\nDigite Digite uma Senha para se Registrar\n\nStatus: {FF4040}N/A Registrado.\n\n{F8F8FF}IP:{FF4040}%s", Nome, IP);
+				ShowPlayerDialog(playerid, DIALOG_REGISTRO, DIALOG_STYLE_PASSWORD, "-- REGISTRANDO --", String, "Registrar", "Cancelar");
+				return 1;
+			}
+			GetPlayerName(playerid, Nome, sizeof(Nome));
+			GetPlayerIp(playerid, IP, sizeof(IP));
+			format(Arquivo, sizeof(Arquivo), "Registros/%s.ini", Nome);
+
+			DOF2_CreateFile(Arquivo);
+			DOF2_SetString(Arquivo, "Senha", inputtext);
+			DOF2_SetInt(Arquivo, "Administrador", 0);
+			DOF2_SetInt(Arquivo, "Level", 0);
+			DOF2_SetInt(Arquivo, "Skin", 98);
+			DOF2_SetInt(Arquivo, "Matou", 0);
+			DOF2_SetInt(Arquivo, "Morreu", 0);
+			DOF2_SetInt(Arquivo, "Dinheiro", 550);
+			DOF2_SaveFile();
+
+			SendClientMessage(playerid, COR_SUCESSO,"| INFO | Você se Registrou com Sucesso, Agora digite sua Senha para Logar");
+			format(String, sizeof(String), "{F8F8FF}Bem Vindo ao Servidor {FF4040}%s{F8F8FF}\n\nVocê ja tem uma Conta Registrada\n\nDigite sua senha para Logar\n\nStatus:{FF4040}Registrado.\n\n{F8F8FF}IP:{FF4040}%s", Nome, IP);
+			ShowPlayerDialog(playerid, DIALOG_LOGIN, DIALOG_STYLE_PASSWORD, "-- LOGANDO --", String, "Logar", "Cancelar");
+			return 1;
+		}
+		else
+		{
+			format(String, sizeof(String), "| INFO | O Jogador(a) %s Foi Kickado do Servidor Motivo: N/A Registrou.", Nome);
+			SendClientMessageToAll(COR_AZUL_ADMIN, String);
+			Kick(playerid);
+		}
+	}
+	if(dialogid == DIALOG_LOGIN)
+	{
+		GetPlayerName(playerid, Nome, sizeof(Nome));
+		GetPlayerIp(playerid, IP, sizeof(IP));
+
+		if(response)
+		{
+
+			if(!strlen(inputtext))
+			{
+				SendClientMessage(playerid, COR_AVISO,"| AVISO | Atenção digite sua Senha para Logar.");
+				format(String, sizeof(String), "{F8F8FF}Bem Vindo ao Servidor {FF4040}%s{F8F8FF}\n\nVocê ja tem uma Conta Registrada\n\nDigite sua senha para Logar\n\nStatus:{FF4040}Registrado.\n\n{F8F8FF}IP:{FF4040}%s", Nome, IP);
+				ShowPlayerDialog(playerid, DIALOG_LOGIN, DIALOG_STYLE_PASSWORD, "-- LOGANDO --", String, "Logar", "Cancelar");
+				return 1;
+			}
+			if(!strcmp(inputtext,DOF2_GetString(Arquivo, "Senha"),false))
+			{
+				Logar(playerid);
+				return 1;
+			}
+			else
+			{
+
+				SendClientMessage(playerid, COR_AVISO,"| AVISO | Senha incorreta digite-a novamente, se errar 3 vezes você sera Kickado.");
+				format(String, sizeof(String), "{F8F8FF}Bem Vindo ao Servidor {FF4040}%s{F8F8FF}\n\nVocê ja tem uma Conta Registrada\n\nDigite sua senha para Logar\n\nStatus:{FF4040}Registrado.\n\n{F8F8FF}IP:{FF4040}%s", Nome, IP);
+				ShowPlayerDialog(playerid, DIALOG_LOGIN, DIALOG_STYLE_PASSWORD, "-- LOGANDO --", String, "Logar", "Cancelar");
+
+				PlayerERRO[playerid]++;
+				if(PlayerERRO[playerid]==3)
+				{
+					format(String, sizeof(String), "| INFO | O Jogador(a) %s Foi Kickado do Servidor Motivo: Limite de Erro.", Nome);
+					SendClientMessageToAll(COR_AZUL_ADMIN, String);
+					Kick(playerid);
+					return 1;
+				}
+			}
+		}
+		else
+		{
+			format(String, sizeof(String), "| INFO | O Jogador(a) %s Foi Kickado do Servidor Motivo: N/A Registrou.", Nome);
+			SendClientMessageToAll(COR_AZUL_ADMIN, String);
+			Kick(playerid);
+		}
+	}
+	return 1;
+}
+
+public hora(playerid)
+{
+	new str[128],
+	str2[128],
+	year,
+	month,
+	day,
+	hour,
+	minute,
+	second;
+
+	getdate(year, month, day);
+	gettime(hour,minute,second);
+	new mes[12];
+
+	if(month == 1) { mes = "1"; }
+	else if(month == 2) {mes = "2";}
+	else if(month == 3) {mes = "3";}
+	else if(month == 4) {mes = "4";}
+	else if(month == 5) {mes = "5";}
+	else if(month == 6) {mes = "6";}
+	else if(month == 7) {mes = "7";}
+	else if(month == 8) {mes = "8";}
+	else if(month == 9) {mes = "9";}
+	else if(month == 10) {mes = "10";}
+	else if(month == 11) {mes = "11";}
+	else if(month == 12) {mes= "12";}
+	format(str, sizeof(str), "%d/%s/%d", day, mes,year);
+	TextDrawSetString(Text:Textdraw22, str);
+	format(str2, sizeof(str2), "%d:%d:%d", hour, minute, second);
+	TextDrawSetString(Text:Textdraw23, str2);
+}
+
+public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
+{
+	if(IsKeyJustDown(KEY_HANDBRAKE,newkeys,oldkeys))
+	{
+		StopLoopingAnim(playerid);
+		TextDrawHideForPlayer(playerid,txtAnimHelper);
+		animation[playerid] = 0;
+	}
+	return 1;
+}
+
+public OnGameModeExit()
+{
+	DOF2_Exit();
+	return 1;
+}
+
+SavePlayer(playerid)
+{
+	GetPlayerName(playerid, Nome, sizeof(Nome));
+	format(Arquivo, sizeof(Arquivo), "Registros/%s.ini", Nome);
+
+	if(DOF2_FileExists(Arquivo))
+	{
+		DOF2_SetInt(Arquivo,"Dinheiro", GetPlayerMoney(playerid));
+		DOF2_SetInt(Arquivo,"Level", Level[playerid]);
+		Skin[playerid] = GetPlayerSkin(playerid);
+		DOF2_SetInt(Arquivo,"Skin", Skin[playerid]);
+		DOF2_SetInt(Arquivo,"Matou", Matou[playerid]);
+		DOF2_SetInt(Arquivo,"Morreu", Morreu[playerid]);
+		DOF2_SaveFile();
+	}
+	return 1;
+}
+
+Logar(playerid)
+{
+	GetPlayerName(playerid, Nome, sizeof(Nome));
+	format(Arquivo, sizeof(Arquivo), "Registros/%s.ini", Nome);
+
+	Administrador[playerid] = DOF2_GetInt(Arquivo, "Administrador");
+	Level[playerid] = DOF2_GetInt(Arquivo, "Level");
+	Skin[playerid] = DOF2_GetInt(Arquivo, "Skin");
+	Matou[playerid] = DOF2_GetInt(Arquivo, "Matou");
+	Morreu[playerid] = DOF2_GetInt(Arquivo, "Morreu");
+	GivePlayerMoney(playerid, DOF2_GetInt(Arquivo,"Dinheiro"));
+	CancelSelectTextDraw(playerid);
+	SpawnPlayer(playerid);
+	DOF2_SaveFile();
+
+	return 1;
+}
+
+CMD:setadmin(playerid, params[]) {
+	new level, ganhou[MAX_PLAYER_NAME], deu[MAX_PLAYER_NAME];
+	if(!IsPlayerAdmin(playerid)) return SendClientMessage(playerid, -1, "Você não é um Administrador Logado Na RCON.");
+	if(sscanf(params, "ud", Id, level)) return SendClientMessage(playerid, -1, "Use /setadmin [Id] [LEVEL]");
+	if (level < 0 || level > 5) return SendClientMessage(playerid, -1, "Level inválido. Use de 1 á 5 .");
+	if(!IsPlayerConnected(Id)) return SendClientMessage(playerid, -1, "Este jogador não está online.");
+	GetPlayerName(Id, ganhou, sizeof(ganhou));
+	GetPlayerName(playerid, deu, sizeof(deu));
+	format(straliotiadmin, sizeof(straliotiadmin), "Você deu admin level %d para o %s", level, ganhou);
+	SendClientMessage(playerid, COR_AZULC, straliotiadmin);
+	format(straliotiadmin, sizeof(straliotiadmin), "O admin %s deu admin level %s para você.", deu, level);
+	SendClientMessage(Id, COR_SALMAO, straliotiadmin);
+	Stralioti[Id][pAdministrador] =  level;
+	return 1;
+}
+
+CMD:setpres(playerid, params[]) {
+	new level, ganhou[MAX_PLAYER_NAME], deu[MAX_PLAYER_NAME];
+	if(Stralioti[playerid][pAdministrador] <= 4)
+	return SendClientMessage(playerid, COR_VERMELHO, "Você não é um Administrador");
+	if(sscanf(params, "ud", Id, level)) return SendClientMessage(playerid, -1, "Use /setpres [Id] [LEVEL]");
+	if (level < 0 || level > 1) return SendClientMessage(playerid, COR_VERMELHO, "Level inválido. Use de 0 á 1 .");
+	if(!IsPlayerConnected(Id)) return SendClientMessage(playerid, COR_VERMELHO, "Este jogador não está online.");
+	GetPlayerName(Id, ganhou, sizeof(ganhou));
+	GetPlayerName(playerid, deu, sizeof(deu));
+	format(straliotiadmin, sizeof(straliotiadmin), "Você deu presidente level %d para o %s", level, ganhou);
+	SendClientMessage(playerid, COR_AZULC, straliotiadmin);
+	format(straliotiadmin, sizeof(straliotiadmin), "O %s deu presidente level %s para você.", deu, level);
+	SendClientMessage(Id, COR_SALMAO, straliotiadmin);
+	Stralioti[Id][pPresidente] =  level;
+	return 1;
+}
+
+CMD:setbtr(playerid, params[]) {
+	new level, ganhou[MAX_PLAYER_NAME], deu[MAX_PLAYER_NAME];
+	if(Stralioti[playerid][pAdministrador] <= 4 && Stralioti[playerid][pVPresidente] <= 0 && Stralioti[playerid][pPresidente] <= 0)
+	return SendClientMessage(playerid, -1, "Você não tem permissão");
+	if(sscanf(params, "ud", Id, level)) return SendClientMessage(playerid, COR_VERMELHO, "Use /setbtr [Id] [LEVEL]");
+	if (level < 0 || level > 1) return SendClientMessage(playerid, COR_VERMELHO, "Level inválido. Use de 0 á 1 .");
+	if(!IsPlayerConnected(Id)) return SendClientMessage(playerid, COR_VERMELHO, "Este jogador não está online.");
+	GetPlayerName(Id, ganhou, sizeof(ganhou));
+	GetPlayerName(playerid, deu, sizeof(deu));
+	format(straliotiadmin, sizeof(straliotiadmin), "Você deu bateria level %d para o %s", level, ganhou);
+	SendClientMessage(playerid, COR_AZULC, straliotiadmin);
+	format(straliotiadmin, sizeof(straliotiadmin), "O %s deu bateria level %s para você.", deu, level);
+	SendClientMessage(Id, COR_SALMAO, straliotiadmin);
+	Stralioti[Id][pBtr] =  level;
+	return 1;
+}
+
+CMD:setvpres(playerid, params[]) {
+	new level, ganhou[MAX_PLAYER_NAME], deu[MAX_PLAYER_NAME];
+	if(Stralioti[playerid][pAdministrador] <= 4 && Stralioti[playerid][pPresidente] <= 0)
+	return SendClientMessage(playerid, COR_VERMELHO, "Você não tem permissão");
+	if(sscanf(params, "ud", Id, level)) return SendClientMessage(playerid, COR_VERMELHO, "Use /setvpres [Id] [LEVEL]");
+	if (level < 0 || level > 1) return SendClientMessage(playerid, COR_VERMELHO, "Level inválido. Use de 0 á 1 .");
+	if(!IsPlayerConnected(Id)) return SendClientMessage(playerid, COR_VERMELHO, "Este jogador não está online.");
+	GetPlayerName(Id, ganhou, sizeof(ganhou));
+	GetPlayerName(playerid, deu, sizeof(deu));
+	format(straliotiadmin, sizeof(straliotiadmin), "Você deu presidente level %d para o %s", level, ganhou);
+	SendClientMessage(playerid, COR_AZULC, straliotiadmin);
+	format(straliotiadmin, sizeof(straliotiadmin), "O admin %s deu presidente level %s para você.", deu, level);
+	SendClientMessage(Id, COR_SALMAO, straliotiadmin);
+	Stralioti[Id][pVPresidente] =  level;
+	return 1;
+}
+
+CMD:setorg(playerid, params[]) {
+	new level, ganhou[MAX_PLAYER_NAME], deu[MAX_PLAYER_NAME];
+	if(Stralioti[playerid][pAdministrador] <= 4 && Stralioti[playerid][pPresidente] <= 1)
+	return SendClientMessage(playerid, COR_VERMELHO, "Você não tem permisão");
+	if(sscanf(params, "ud", Id, level)) return SendClientMessage(playerid, COR_VERMELHO, "Use /setorg [Id] [LEVEL]");
+	if (level < 0 || level > 1) return SendClientMessage(playerid, COR_VERMELHO, "Level inválido. Use de 0 á 1 .");
+	if(!IsPlayerConnected(Id)) return SendClientMessage(playerid, COR_VERMELHO, "Este jogador não está online.");
+	GetPlayerName(Id, ganhou, sizeof(ganhou));
+	GetPlayerName(playerid, deu, sizeof(deu));
+	format(straliotiadmin, sizeof(straliotiadmin), "Você deu organizador level %d para o %s", level, ganhou);
+	SendClientMessageToAll(COR_AZULC, straliotiadmin);
+	format(straliotiadmin, sizeof(straliotiadmin), "O admin %s deu organizador level %s para você.", deu, level);
+	SendClientMessageToAll(COR_SALMAO, straliotiadmin);
+	Stralioti[Id][pOrg] =  level;
+	return 1;
+}
+
+CMD:setpux(playerid, params[]) {
+	new level, ganhou[MAX_PLAYER_NAME], deu[MAX_PLAYER_NAME];
+	if(Stralioti[playerid][pAdministrador] <= 4 && Stralioti[playerid][pVPresidente] <= 0 && Stralioti[playerid][pPresidente] <= 0)
+	return SendClientMessage(playerid, COR_VERMELHO, "Você não tem permisão");
+	if(sscanf(params, "ud", Id, level)) return SendClientMessage(playerid, COR_VERMELHO, "Use /setpux [Id] [LEVEL]");
+	if (level < 0 || level > 1) return SendClientMessage(playerid, COR_VERMELHO, "Level inválido. Use de 0 á 1.");
+	if(!IsPlayerConnected(Id)) return SendClientMessage(playerid, COR_VERMELHO, "Este jogador não está online.");
+	GetPlayerName(Id, ganhou, sizeof(ganhou));
+	GetPlayerName(playerid, deu, sizeof(deu));
+	format(straliotiadmin, sizeof(straliotiadmin), "Você deu puxador level %d para o %s", level, ganhou);
+	SendClientMessageToAll(COR_AZULC, straliotiadmin);
+	format(straliotiadmin, sizeof(straliotiadmin), "O %s deu puxador level %s para você.", deu, level);
+	SendClientMessageToAll(COR_SALMAO, straliotiadmin);
+	Stralioti[Id][pPux] =  level;
+	return 1;
+}
+
+CMD:setpm(playerid, params[]) {
+	new level, ganhou[MAX_PLAYER_NAME], deu[MAX_PLAYER_NAME];
+	if(Stralioti[playerid][pAdministrador] <= 4 && Stralioti[playerid][pPM] <= 5)
+	return SendClientMessage(playerid, COR_VERMELHO, "Você não tem permisão");
+	if(sscanf(params, "ud", Id, level)) return SendClientMessage(playerid, COR_VERMELHO, "Use /setpm [Id] [LEVEL]");
+	if (level < 0 || level > 5) return SendClientMessage(playerid, COR_VERMELHO, "Level inválido. Use de 0 á 5.");
+	if(!IsPlayerConnected(Id)) return SendClientMessage(playerid, COR_VERMELHO, "Este jogador não está online.");
+	GetPlayerName(Id, ganhou, sizeof(ganhou));
+	GetPlayerName(playerid, deu, sizeof(deu));
+	format(straliotiadmin, sizeof(straliotiadmin), "Você deu PM level %d para o %s", level, ganhou);
+	SendClientMessage(playerid, COR_AZULC, straliotiadmin);
+	format(straliotiadmin, sizeof(straliotiadmin), "O %s deu PM level %s para você.", deu, level);
+	SendClientMessage(Id, COR_SALMAO, straliotiadmin);
+	Stralioti[Id][pPM] =  level;
+	return 1;
+}
+
+CMD:settrafico(playerid, params[]) {
+	new level, ganhou[MAX_PLAYER_NAME], deu[MAX_PLAYER_NAME];
+	if(Stralioti[playerid][pAdministrador] <= 4 && Stralioti[playerid][pTrafico] <= 5)
+	return SendClientMessage(playerid, COR_VERMELHO, "Você não tem permisão");
+	if(sscanf(params, "ud", Id, level)) return SendClientMessage(playerid, COR_VERMELHO, "Use /settrafico [Id] [LEVEL]");
+	if (level < 0 || level > 5) return SendClientMessage(playerid, COR_VERMELHO, "Level inválido. Use de 0 á 5.");
+	if(!IsPlayerConnected(Id)) return SendClientMessage(playerid, COR_VERMELHO, "Este jogador não está online.");
+	GetPlayerName(Id, ganhou, sizeof(ganhou));
+	GetPlayerName(playerid, deu, sizeof(deu));
+	format(straliotiadmin, sizeof(straliotiadmin), "Você deu Tráfico level %d para o %s", level, ganhou);
+	SendClientMessage(playerid, COR_AZULC, straliotiadmin);
+	format(straliotiadmin, sizeof(straliotiadmin), "O %s deu Tráfico level %s para você.", deu, level);
+	SendClientMessage(Id, COR_SALMAO, straliotiadmin);
+	Stralioti[Id][pTrafico] =  level;
+	return 1;
+}
+
+CMD:setreporter(playerid, params[]) {
+	new level, ganhou[MAX_PLAYER_NAME], deu[MAX_PLAYER_NAME];
+	if(Stralioti[playerid][pAdministrador] <= 4 && Stralioti[playerid][pReporter] <= 3)
+	return SendClientMessage(playerid, COR_VERMELHO, "Você não tem permisão");
+	if(sscanf(params, "ud", Id, level)) return SendClientMessage(playerid, COR_VERMELHO, "Use /setreporter [Id] [LEVEL]");
+	if (level < 0 || level > 3) return SendClientMessage(playerid, COR_VERMELHO, "Level inválido. Use de 0 á 3.");
+	if(!IsPlayerConnected(Id)) return SendClientMessage(playerid, COR_VERMELHO, "Este jogador não está online.");
+	GetPlayerName(Id, ganhou, sizeof(ganhou));
+	GetPlayerName(playerid, deu, sizeof(deu));
+	format(straliotiadmin, sizeof(straliotiadmin), "Você deu Repórter level %d para o %s", level, ganhou);
+	SendClientMessage(playerid, COR_AZULC, straliotiadmin);
+	format(straliotiadmin, sizeof(straliotiadmin), "O %s deu Repórter level %s para você.", deu, level);
+	SendClientMessage(Id, COR_SALMAO, straliotiadmin);
+	Stralioti[Id][pReporter] =  level;
+	return 1;
+}
+
+CMD:sethelper(playerid, params[]) {
+	new level, ganhou[MAX_PLAYER_NAME], deu[MAX_PLAYER_NAME];
+	if(Stralioti[playerid][pAdministrador] <= 4 && Stralioti[playerid][pHelper] <= 4)
+	return SendClientMessage(playerid, COR_VERMELHO, "Você não tem permisão");
+	if(sscanf(params, "ud", Id, level)) return SendClientMessage(playerid, COR_VERMELHO, "Use /sethelper [Id] [LEVEL]");
+	if (level < 0 || level > 4) return SendClientMessage(playerid, COR_VERMELHO, "Level inválido. Use de 0 á 4.");
+	if(!IsPlayerConnected(Id)) return SendClientMessage(playerid, COR_VERMELHO, "Este jogador não está online.");
+	GetPlayerName(Id, ganhou, sizeof(ganhou));
+	GetPlayerName(playerid, deu, sizeof(deu));
+	format(straliotiadmin, sizeof(straliotiadmin), "Você deu Helper level %d para o %s", level, ganhou);
+	SendClientMessage(playerid,COR_AZULC, straliotiadmin);
+	format(straliotiadmin, sizeof(straliotiadmin), "O %s deu Helper level %s para você.", deu, level);
+	SendClientMessage(Id, COR_SALMAO, straliotiadmin);
+	Stralioti[Id][pHelper] =  level;
+	return 1;
+}
+
+CMD:comandosadmin(playerid) {
+	ShowPlayerDialog(playerid, 3, DIALOG_STYLE_MSGBOX, "COMANDOS", "/a\n/reports\n/olhar\n/olharoff\n/vidat\n/vida\n/pinfo\n/asay\n/trazer\n/ir\n/veh\n/dc\n/reparar\n/congelar\n/descongelar\n/tapa\n/prender\n/soltar\n/kick\n/ban\n/coletet\n/colete\n/jetpack", "Ok", "");
+	return 1;
+}
+
+CMD:sim(playerid, params[]) {
+	if(Votos[playerid] == 1)
+	return SendClientMessage(playerid, COR_VERMELHO,"Você já votou!");
+
+	if(EnqueteAberta == false)
+	return SendClientMessage(playerid, COR_VERMELHO,"Nenhuma enquete está aberta!");
+
+	TotalDeVotosSim++;
+	SendClientMessage(playerid, COR_AZULC," Seu voto foi armazenado no banco de dados com sucesso - Sim");
+	Votos[playerid] = 1;
+	return 1;
+}
+
+CMD:nao(playerid, params[])
+{
+	if(Votos[playerid] == 1)
+	return SendClientMessage(playerid, COR_VERMELHO,"Você já votou!");
+
+	if(EnqueteAberta == false)
+	return SendClientMessage(playerid, COR_VERMELHO,"Nenhuma enquete está aberta!");
+
+	TotalDeVotosNao++;
+	Votos[playerid] = 1;
+	SendClientMessage(playerid, COR_AZULC," Seu voto foi armazenado no banco de dados com sucesso - Não");
+	return 1;
+}
+
+CMD:pm(playerid, params[]) {
+	new mensagem;
+	if(sscanf(params, "us", Id, mensagem))return SendClientMessage(playerid, COR_AMARELO,"Use /pm [id] [mensagem]");
+	if(!IsPlayerConnected(Id)) return SendClientMessage(playerid, COR_VERMELHO, "Este jogador não está online.");
+	if(Stralioti[Id][BlockPM] == true)
+	return SendClientMessage(playerid, COR_VERMELHO, "Este jogador está com PM bloqueado!");
+	format(stralioti, sizeof(stralioti),"Enviado para %s (%d): %s", PlayerNome(Id), Id, mensagem);
+	SendClientMessage(playerid, COR_AMARELO, stralioti);
+	format(stralioti, sizeof(stralioti),"Recebido de %s (%d): %s", PlayerNome(playerid), Id, mensagem);
+	SendClientMessage(Id, COR_AMARELO, stralioti);
+	for(new i = 0; i <= HighestID; i ++) {
+		if(Stralioti[i][LerPM] == true) {
+			SendFormattedMessage(i, COR_ADMIN, "%s enviou uma mensagem para %s: %s", PlayerNome(playerid), PlayerNome(Id), mensagem);
+		}
+	}
+	return 1;
+}
+
+CMD:su(playerid, params[])
+{
+	if(Stralioti[playerid][pPM] <= 0) return SendClientMessage(playerid, COR_VERMELHO, "Você não é um policial");
+	new id, motivo1[128], str[128], nome[MAX_PLAYER_NAME];
+	GetPlayerName(playerid, nome, sizeof(nome));
+	if(sscanf(params, "us", id, motivo)) return SendClientMessage(playerid, COR_VERMELHO, "Use: /su [id] [acusação]");
+	if(!IsPlayerConnected(id)) return SendClientMessage(playerid, COR_VERMELHO, "Este jogador não está online.");
+	format(str,sizeof(str),"O Policial %s lhe acusou de ter cometido um crime: %s", nome, motivo1);
+	SendClientMessage(playerid, COR_VERMELHO, str);
+	Acusado[id] = true;
+	return 1;
+}
+
+CMD:lerpm(playerid, params[]) {
+	if(Stralioti[playerid][pAdministrador] <= 2) return SendClientMessage(playerid, COR_VERMELHO,"Você não é um Administrador");
+	if(Stralioti[playerid][LerPM] == false) {
+		Stralioti[playerid][LerPM] = true;
+		SendClientMessage(playerid, COR_AZULC, "Você está lendo PM's agora.");
+	} else {
+		Stralioti[playerid][LerPM] = false;
+		SendClientMessage(playerid, COR_VERMELHO, "Você parou de ler PM's.");
+	}
+	return 1;
+}
+
+CMD:bpm(playerid, params[]) {
+	if(Stralioti[playerid][BlockPM] == false) {
+		Stralioti[playerid][BlockPM] = true;
+		SendClientMessage(playerid, COR_VERMELHO, "PM bloqueado.");
+	} else SendClientMessage(playerid, COR_VERMELHO, "Você já está de BPM");
+	return 1;
+}
+
+CMD:apm(playerid, params[]) {
+	if(Stralioti[playerid][BlockPM] == true) {
+		Stralioti[playerid][BlockPM] = false;
+		SendClientMessage(playerid,  COR_AZULC, "PM desbloqueado.");
+	} else SendClientMessage(playerid,  COR_AZULC, "Você já está de APM");
+	return 1;
+}
+
+CMD:payday(playerid) {
+	if(Stralioti[playerid][pAdministrador] <= 5) return SendClientMessage(playerid, COR_VERMELHO,"Você não tem permissão");
+    @pagamento();
+	format(stralioti, sizeof(stralioti), "O GameMaster %s deu Chuva de Payday", PlayerNome(playerid));
+    return SendClientMessageToAll(COR_AZULC, stralioti);
+}
+
+CMD:reportar(playerid, params[])
+{
+	new id;
+	new texto1[128];
+	new Str[128];
+	new inome[MAX_PLAYER_NAME];
+	new nome[MAX_PLAYER_NAME];
+	if(sscanf(params,"us",id,texto1)) return SendClientMessage(playerid,COR_VERMELHO,"USE: /reportar [id] [motivo]");
+	if(!IsPlayerConnected(id)) return SendClientMessage(playerid,COR_VERMELHO,"Player não conectado");
+	GetPlayerName(id,inome,MAX_PLAYER_NAME);
+	GetPlayerName(id,nome,MAX_PLAYER_NAME);
+	SendClientMessage(playerid,COR_AZULC,"Obrigado Por Reportar...");
+	for(new i=0; i < MAX_PLAYERS; i++)
+ 	{
+		if(Stralioti[i][pAdministrador] <= 0)
+  		{
+   			format(Str, sizeof(Str),"AVISO: %s reportou %s motivo: %s",nome,inome,texto1);
+     		SendClientMessage(i, COR_VERMELHO,Str);
+       	}
+    }
+	return true;
+}
+
+CMD:bir(playerid, params[])
+{
+	if(Stralioti[playerid][pAdministrador] <= 0)
+	return SendClientMessage(playerid, COR_VERMELHO, "ERRO: Você não está logado para utilizar este comando!");
+
+	if(Stralioti[playerid][BlockIR] == false) {
+		Stralioti[playerid][BlockIR] = true;
+		SendClientMessage(playerid, COR_VERMELHO, "[INFO] IR bloqueado.");
+	} else SendClientMessage(playerid, COR_VERMELHO, "ERRO: Seu IR já está bloqueado!");
+
+	return 1;
+}
+
+CMD:btr(playerid, params[])
+{
+	if(Stralioti[playerid][pAdministrador] <= 0)
+	return SendClientMessage(playerid, COR_VERMELHO, "ERRO: Você não está logado para utilizar este comando!");
+
+	if(Stralioti[playerid][BlockTR] == false) {
+		Stralioti[playerid][BlockTR] = true;
+		SendClientMessage(playerid, COR_VERMELHO, "[INFO] TR bloqueado.");
+	} else SendClientMessage(playerid, COR_VERMELHO, "ERRO: Seu TR já está bloqueado!");
+
+	return 1;
+}
+
+CMD:vips(playerid)
+{
+    new string[85];
+    new count;
+    SendClientMessage(playerid, 0x33AAFFFF, "** Todos os jogadores VIP online:");
+    for(new i = 0; i < MAX_PLAYERS; i++)
+    {
+        if(Vip[i] > 0)
+        {
+            if(IsPlayerConnected(i))
+               {
+                format(string, sizeof(string), "Vip %s (%d) [%s]", PlayerNome(i), i, convertNumber(Vip[i]-gettime()));
+                SendClientMessage(playerid, 0xE3E3E3FF, string);
+                count++;
+               }
+        }
+    }
+    if(count == 0)
+        return SendClientMessage(playerid, 0xD8D8D8FF, "Não tem nenhum jogador vip on-line!");
+
+    return true;
+}
+
+CMD:setvip(playerid, params[])
+{
+    new id, days, string[70];
+
+    if(!IsPlayerAdmin(playerid))
+        return SendClientMessage(playerid, 0xFF0000AA, "ERRO: Você precisa estar logado na RCON para usar este comando!");
+
+    if(sscanf(params, "ud", id, days))
+        return SendClientMessage(playerid, COR_AZULC, "Modo de uso: /setvip [id] [dias]");
+
+    if(days < 0)
+    {
+        return SendClientMessage(playerid, 0xFF0000AA, "ERRO: Este jogador não está online!");
+    }
+    else
+    {
+        if(!IsPlayerConnected(id))
+            return SendClientMessage(playerid, 0xFF0000AA, "ERRO: Este jogador não está online!");
+        else
+        {
+            Vip[id] = ConvertDays(days);
+            format(string, sizeof(string), "** Você deu %d dias de VIP para %s.", days, PlayerNome(id));
+            SendClientMessage(playerid, 0x33AAFFFF, string);
+            format(string, sizeof(string), "** Você recebeu %d dias de VIP.", days);
+            SendClientMessage(playerid, 0x33AAFFFF, string);
+
+            format(string, sizeof(string), "/vips/%s.ini", PlayerNome(id));
+            DOF2_CreateFile(string);
+            DOF2_SetInt(string,"VipExpira", Vip[id]);
+            DOF2_SaveFile();
+        }
+    }
+    return true;
+}
+
+CMD:admins(playerid, params[]) {
+	    SendClientMessage(playerid, 0x0080FFAA, "Administradores Online:");
+		new count=0;
+		for(new i=0; i<MAX_PLAYERS; i++)
+		{
+	    	if(IsPlayerConnected(i))
+	    	{
+                    	if(Stralioti[i][pAdministrador] == 1)
+		                {
+						new pname[24];
+					    GetPlayerName(i, pname, 24);
+					    format(Straliotii, 256, "Admin %s [Administrador Teste]", pname);
+                        SendClientMessage(playerid, 0xE3E3E3FF, Straliotii);
+					    count++;
+                        }
+                        if(Stralioti[i][pAdministrador] == 2)
+		                {
+						new pname[24];
+					    GetPlayerName(i, pname, 24);
+					    format(Straliotii, 256, "Admin %s [Administrador Teste]", pname);
+                        SendClientMessage(playerid, 0xE3E3E3FF, Straliotii);
+					    count++;
+                        }
+                        if(Stralioti[i][pAdministrador] == 3)
+		                {
+                        new NomeA[MAX_PLAYER_NAME];
+			            GetPlayerName(i, NomeA, sizeof(NomeA));
+			            format(Straliotii, sizeof(Straliotii), NomeA);
+						new pname[24];
+						GetPlayerName(i, pname, 24);
+						format(Straliotii, 256, "Admin %s [Administrador Fixo]", pname);
+                        SendClientMessage(playerid, 0xE3E3E3FF, Straliotii);
+						count++;
+                        }
+                        if(Stralioti[i][pAdministrador] == 4)
+		                {
+					    new NomeA[MAX_PLAYER_NAME];
+			            GetPlayerName(i, NomeA, sizeof(NomeA));
+			            format(Straliotii, sizeof(Straliotii), NomeA);
+						new pname[24];
+						GetPlayerName(i, pname, 24);
+						format(Straliotii, 256, "Admin %s [Sub Game Master] [Função: %s]", pname);
+                        SendClientMessage(playerid, 0xE3E3E3FF, Straliotii);
+						count++;
+                        }
+                        if(Stralioti[i][pAdministrador] == 5)
+		                {
+					    new NomeA[MAX_PLAYER_NAME];
+			            GetPlayerName(i, NomeA, sizeof(NomeA));
+			            format(Straliotii, sizeof(Straliotii), NomeA);
+						new pname[24];
+						GetPlayerName(i, pname, 24);
+						format(Straliotii, 256, "Admin %s [Game Master Teste] [Função: %s]", pname);
+                        SendClientMessage(playerid, 0xE3E3E3FF, Straliotii);
+						count++;
+                        }
+             	}
+			}
+		return 1;
+}
+
+CMD:helpers(playerid, params[]) {
+	    SendClientMessage(playerid, 0x0080FFAA, "Helper Online:");
+		new count=0;
+		for(new i=0; i<MAX_PLAYERS; i++)
+		{
+	    	if(IsPlayerConnected(i))
+	    	{
+                    	if(Stralioti[i][pHelper] == 1)
+		                {
+						new pname[24];
+					    GetPlayerName(i, pname, 24);
+					    format(Straliotii, 256, "Helper %s [Helper Teste]", pname);
+                        SendClientMessage(playerid, 0xE3E3E3FF, Straliotii);
+					    count++;
+                        }
+                        if(Stralioti[i][pHelper] == 2)
+		                {
+						new pname[24];
+					    GetPlayerName(i, pname, 24);
+					    format(Straliotii, 256, "Helper %s [Helper Fixo]", pname);
+                        SendClientMessage(playerid, 0xE3E3E3FF, Straliotii);
+					    count++;
+                        }
+                        if(Stralioti[i][pHelper] == 3)
+		                {
+                        new NomeA[MAX_PLAYER_NAME];
+			            GetPlayerName(i, NomeA, sizeof(NomeA));
+			            format(Straliotii, sizeof(Straliotii), NomeA);
+						new pname[24];
+						GetPlayerName(i, pname, 24);
+						format(Straliotii, 256, "Helper %s [Helper]", pname);
+                        SendClientMessage(playerid, 0xE3E3E3FF, Straliotii);
+						count++;
+                        }
+                        if(Stralioti[i][pHelper] == 4)
+		                {
+					    new NomeA[MAX_PLAYER_NAME];
+			            GetPlayerName(i, NomeA, sizeof(NomeA));
+			            format(Straliotii, sizeof(Straliotii), NomeA);
+						new pname[24];
+						GetPlayerName(i, pname, 24);
+						format(Straliotii, 256, "Helper %s [Sub Líder]", pname);
+                        SendClientMessage(playerid, 0xE3E3E3FF, Straliotii);
+						count++;
+                        }
+                        if(Stralioti[i][pHelper] == 5)
+		                {
+					    new NomeA[MAX_PLAYER_NAME];
+			            GetPlayerName(i, NomeA, sizeof(NomeA));
+			            format(Straliotii, sizeof(Straliotii), NomeA);
+						new pname[24];
+						GetPlayerName(i, pname, 24);
+						format(Straliotii, 256, "Helper %s [Líder]", pname);
+                        SendClientMessage(playerid, 0xE3E3E3FF, Straliotii);
+						count++;
+                        }
+             	}
+			}
+		return 1;
+}
+
+CMD:mudartorcida(playerid) {
+	ShowPlayerDialog(playerid, Torcidas, DIALOG_STYLE_LIST, "Torcidas", "Sudeste\nSul/Centro\nNorte/Nordeste", "Escolher", "Sair");
+	return 1;
+}
+
+CMD:id(playerid, params[]) {
+	new tmp[256], nick;
+	if(sscanf(params, "us", Id))return SendClientMessage(playerid, COR_AZULC,"Use : /id [parte do nick]");
+	format(stralioti,sizeof(stralioti),"** Procurando por: \"%s\": ",(Id), nick);
+	SendClientMessage(playerid,COR_AZULC,stralioti);
+	new found=0;
+	for(new i = 0; i <= HighestID; i ++)
+	{
+
+
+		if(IsPlayerConnected(i))
+		{
+
+
+			new foundname[MAX_PLAYER_NAME+1];
+			GetPlayerName(i, foundname, MAX_PLAYER_NAME+1);
+			new namelen = strlen(foundname);
+			new bool:searched=false;
+			for(new pos=0; pos <= namelen; pos++)
+			{
+
+
+				if(searched != true)
+				{
+
+
+					if(strfind(foundname,tmp,true) == pos)
+					{
+
+
+						found++;
+						if(GetPlayerScore(i) < 2)
+						{
+
+
+							format(stralioti,sizeof(stralioti),"%d. %s (ID %d) {f50000}(Level %d)",found,foundname,i, GetPlayerScore(i));
+							SendClientMessage(playerid, -1 ,stralioti);
+						}
+						else
+						{
+
+
+							format(stralioti,sizeof(stralioti),"%d. %s (ID %d) {26cf0a}(Level %d)",found,foundname,i, GetPlayerScore(i));
+							SendClientMessage(playerid, -1 ,stralioti);
+						}
+
+						searched = true;
+					}
+				}
+			}
+		}
+	}
+	return 1;
+}
+
+CMD:atender(playerid, params[]) {
+	if(Stralioti[playerid][pReporter] <= 0 && Stralioti[playerid][pHelper] <= 0) return SendClientMessage(playerid, COR_VERMELHO,"Você não tem permissão");
+	if(sscanf(params, "u", Id)) return SendClientMessage(playerid, COR_VERMELHO,"Use: /atender [id]");
+	new Float:plocx,Float:plocy,Float:plocz;
+	GetPlayerPos(Id, plocx, plocy, plocz);
+	new intid = GetPlayerInterior(Id);
+	SetPlayerInterior(playerid,intid);
+	SetPlayerPos(playerid,plocx,plocy+2, plocz);
+	return 1;
+}
+
+CMD:avaliar(playerid, params[]) {
+	if(Stralioti[playerid][pHelper] <= 0) return SendClientMessage(playerid, COR_VERMELHO,"Você não tem permissão");
+	if(!IsPlayerConnected(Id)) return SendClientMessage(playerid, COR_VERMELHO, "Este jogador não está online.");
+	IDHELPER[Id] = playerid;
+	IDHELPER[playerid] = Id;
+	ShowPlayerDialog(Id,888, DIALOG_STYLE_MSGBOX, stralioti, "Olá, eu sou um helper do servidor, e trabalho ajudando as pessoas. \nCom a sua avaliação eu posso subir de nível e ajudar cada vez mais. \n \nEu ajudei você?", "Sim", "Não");
+	return 1;
+}
+
+CMD:m(playerid, params[]) {
+	new i;
+	if(Stralioti[playerid][pPM] <= 0) return SendClientMessage(playerid, COR_VERMELHO,"Você não tem permissão");
+	if(GetDistanceBetweenPlayers(playerid, i) <= 30)
+	{
+
+
+
+
+		if(sscanf(params, "s", texto)) return SendClientMessage(playerid, COR_VERMELHO,"Use: /m [texto]");
+		format(stralioti, sizeof(stralioti), "[POLICIAL]%s: %s", PlayerNome(playerid), texto);
+		SendClientMessageToAll(COR_VERMELHO, stralioti);
+	}
+	return 1;
+}
+
+CMD:p(playerid, params[]) {
+	if(Stralioti[playerid][pPM] <= 0) return SendClientMessage(playerid, COR_VERMELHO,"Você não tem permissão");
+	new text[128], string[128], playername[MAX_PLAYER_NAME];
+	if(sscanf(params, "s", text)) return SendClientMessage(playerid, COR_VERMELHO, "USE: /p [MENSAGEM]");
+	if(Stralioti[playerid][pPM] == 0) return SendClientMessage(playerid, COR_VERMELHO, "Você não participa de nenhuma organização!");
+	GetPlayerName(playerid, playername, sizeof(playername));
+	format(string, sizeof(string), "(Rádio) %s [Cargo: %d] diz: %s", playername, Stralioti[playerid][pPM], text);
+	SendFamilyMessage(Stralioti[playerid][pPM], COR_VERMELHO, string);
+	return 1;
+}
+
+CMD:anunciar(playerid, params[]) {
+	if(Stralioti[playerid][pPresidente] <= 0 && Stralioti[playerid][pOrg] <= 0 && Stralioti[playerid][pPux] <= 0 && Stralioti[playerid][pVPresidente] <= 0) return SendClientMessage(playerid, COR_VERMELHO,"Você não tem permissão");
+	ShowPlayerDialog(playerid, ANUNCIAR, DIALOG_STYLE_LIST, "ANUNCIAR", "X3\nCF\nTreta", "Escolher", "Sair");
+	return 1;
+}
+
+CMD:a(playerid, params[]) {
+	if(Stralioti[playerid][pAdministrador] <= 0) return SendClientMessage(playerid, COR_VERMELHO,"Você não é um Administrador");
+	{
+
+
+
+
+
+
+
+		for( new i; i < MAX_PLAYERS; i++ )
+		{
+
+
+
+
+
+
+
+			if(sscanf(params, "s", texto)) return SendClientMessage(playerid, COR_VERMELHO,"Use /a [texto]");
+			format(stralioti, sizeof(stralioti),"Chat Admin: %s: %s", PlayerNome(playerid),texto);
+			SendClientMessage(i,COR_ROSA,stralioti);
+		}
+	}
+	return 1;
+}
+
+CMD:t(playerid, params[]) {
+	new text[128], string[128], playername[MAX_PLAYER_NAME];
+	if(sscanf(params, "s", text)) return SendClientMessage(playerid, 0xAD0000AA, "USE: /t [MENSAGEM]");
+	if(Stralioti[playerid][pTrafico] == 0) return SendClientMessage(playerid, 0xAD0000AA, "Você não participa de nenhuma organização!");
+	GetPlayerName(playerid, playername, sizeof(playername));
+	format(string, sizeof(string), "(Rádio) %s [Cargo: %d] diz: %s", playername, Stralioti[playerid][pTrafico], text);
+	SendFamilyMessage(Stralioti[playerid][pTrafico], COR_VERMELHO, string);
+	return 1;
+}
+
+CMD:jetpack(playerid, params[]) {
+	if(Stralioti[playerid][pAdministrador] <= 0 && Stralioti[playerid][pReporter] <= 0) return SendClientMessage(playerid, COR_VERMELHO,"Você não é um Administrador");
+	SetPlayerSpecialAction(playerid, 2);
+	return 1;
+}
+
+CMD:criar(playerid, params[]) {
+	if(Stralioti[playerid][pAdministrador] <= 3) return SendClientMessage(playerid, COR_VERMELHO,"Você não é um Administrador");
+	ShowPlayerDialog(playerid,DIALOG_EN,DIALOG_STYLE_INPUT,"Criar Enquete","Por favor digite sua pergunta para enquete","Criar","Cancelar");
+	return 1;
+}
+
+CMD:dtp(playerid, params[]) {
+	new i;
+	if(Stralioti[playerid][pAdministrador] <= 0) return SendClientMessage(playerid, COR_VERMELHO,"Você não é um Administrador");
+	if(GetDistanceBetweenPlayers(playerid, i) <= 50)
+	ResetPlayerWeapons(i);
+	return 1;
+}
+
+CMD:spawn(playerid, params[]) {
+	if(Stralioti[playerid][pAdministrador] <= 0 && Stralioti[playerid][pOrg] <= 0 && Stralioti[playerid][pPresidente] <= 0 && Stralioti[playerid][pTrafico] <= 3 && Stralioti[playerid][pPM] <= 3 && Stralioti[playerid][pReporter] <= 2 && Stralioti[playerid][pHelper] <= 3)
+	return SendClientMessage(playerid, COR_VERMELHO,"Você não tem permissão");
+	if(sscanf(params, "us", Id, texto)) return SendClientMessage(playerid, COR_VERMELHO,"Use: /spawn [id][motivo]");
+	format(stralioti, sizeof(stralioti),"O %s respawnou %s motivo %s", PlayerNome(playerid),PlayerNome(Id),texto);
+	SendClientMessageToAll( COR_KICK, stralioti);
+	SpawnPlayer(Id);
+	return 1;
+}
+
+CMD:setskin(playerid, params[]) {
+	new skin;
+	if(Stralioti[playerid][pPresidente] <= 0 && Stralioti[playerid][pOrg] <= 0 && Stralioti[playerid][pVPresidente] <= 0) return SendClientMessage(playerid, COR_VERMELHO,"Você não tem permissão");
+	if(sscanf(params, "u", skin)) return SendClientMessage(playerid, COR_VERMELHO,"Use: /setskin [id]");
+	format(stralioti, sizeof(stralioti),"%s setou a skin do %s", PlayerNome(playerid), PlayerNome(Id));
+	SendClientMessage(playerid, COR_AZULC, stralioti);
+	SetPlayerSkin(Id, skin);
+	return 1;
+}
+
+CMD:reporter(playerid, params[]) {
+	if(Stralioti[playerid][pReporter] <= 0) return SendClientMessage(playerid, COR_VERMELHO,"Você não é um Repórter");
+	GivePlayerWeapon(playerid, 13, 999);
+	GivePlayerWeapon(playerid, 43, 999);
+	return 1;
+}
+
+CMD:hqhelper(playerid, params[]) {
+	if(Stralioti[playerid][pHelper] <= 0) return SendClientMessage(playerid, COR_VERMELHO,"Você não é um Helper");
+	SetPlayerPos(playerid, -1724.4130,1019.4725,17.5859);
+	format(stralioti, sizeof(stralioti), "O Helper %s foi para a HQ", PlayerNome(playerid));
+	MensagemPerto(playerid, COR_KICK, stralioti, 50);
+	return 1;
+}
+
+CMD:chamar(playerid,params[]) {
+	if(strcmp(params, "reporter", true)==0)
+	{
+		if(Stralioti[playerid][FilaRGT] > 0)
+		return SendClientMessage(playerid, COR_VERMELHO, "Você já chamou um repórter, aguarde, use '/sairfila reporter' para sair da fila caso queira.");
+
+		SenhaRGT++;
+		Stralioti[playerid][FilaRGT] = SenhaRGT;
+
+		SendFormattedMessage(playerid, COR_VERMELHO, "[INFO] Você pegou sua senha [%d], aguarde para ser atendido por um repórter.", Stralioti[playerid][FilaRGT]);
+		SendClientMessage(playerid, COR_VERMELHO, "[INFO]Para ver o progresso da fila, use /fila reporter.");
+		SendClientMessage(playerid, COR_AZULC, "[INFO] Caso deseje sair da fila, use /sairfila reporter.");
+
+		new string[128];
+		format(string, sizeof(string), "[FILA DE REPORTAGÉM] O jogador %s está na fila para ser atendido [Senha: %d] [ID: %d] (/Ir).", PlayerNome(playerid), Stralioti[playerid][FilaRGT], playerid);
+		SendMessageToReporter(COR_LARANJA, string);
+	}
+	else if(strcmp(params, "helper", true)==0)
+	{
+		if(Stralioti[playerid][FilaHELPER] > 0)
+		return SendClientMessage(playerid, COR_HELPER, "Você já chamou um repórter, aguarde, use '/sairfila helper' para sair da fila caso queira.");
+
+		Senha++;
+		Stralioti[playerid][FilaHELPER] = Senha;
+
+		SendFormattedMessage(playerid, COR_VERMELHO, "[INFO] Você pegou sua senha [%d], aguarde para ser atendido por um Helper.", Stralioti[playerid][FilaHELPER]);
+		SendClientMessage(playerid, COR_VERMELHO, "[INFO] Para ver o progresso da fila, use /fila helper.");
+		SendClientMessage(playerid, COR_AZULC, "[INFO] Caso deseje sair da fila, use /sairfila helper.");
+
+		new string[128];
+		format(string, sizeof(string), "[FILA DE HELPER] O jogador %s está na fila para ser atendido [Senha: %d] [ID: %d] (/atender).", PlayerNome(playerid), Stralioti[playerid][FilaHELPER], playerid);
+		SendMessageToAdminsAndHelper(COR_HELPER, string);
+	}
+	return 1;
+}
+
+CMD:dp(playerid, params[]) {
+	if(Stralioti[playerid][pPM] <= 0) return SendClientMessage(playerid, COR_VERMELHO,"Você não é um PM");
+
+	if(Stralioti[playerid][pPM] == 1 || Stralioti[playerid][pPM] == 2)
+	{
+		SetPlayerPos(playerid,1528.9910,-1678.1188,5.8906);
+		SetPlayerArmour(playerid, 100);
+		SetPlayerHealth(playerid, 100);
+		SetPlayerColor(playerid, -1);
+		GivePlayerWeapon(playerid, 22, 9999);
+		GivePlayerWeapon(playerid, 25, 9999);
+	}
+	if(Stralioti[playerid][pPM] == 3)
+	{
+		SetPlayerColor(playerid, -1);
+		SetPlayerPos(playerid,1528.9910,-1678.1188,5.8906);
+		SetPlayerArmour(playerid, 100);
+		SetPlayerHealth(playerid, 100);
+		GivePlayerWeapon(playerid, 22, 9999);
+		GivePlayerWeapon(playerid, 25, 9999);
+		GivePlayerWeapon(playerid, 29, 9999);
+	}
+	if(Stralioti[playerid][pPM] == 4)
+	{
+		SetPlayerColor(playerid, -1);
+		SetPlayerArmour(playerid, 100);
+		SetPlayerHealth(playerid, 100);
+		SetPlayerPos(playerid,1528.9910,-1678.1188,5.8906);
+		GivePlayerWeapon(playerid, 25, 9999);
+		GivePlayerWeapon(playerid, 29, 9999);
+		GivePlayerWeapon(playerid, 24, 9999);
+		GivePlayerWeapon(playerid, 30, 9999);
+	}
+	if(Stralioti[playerid][pPM] == 5)
+	{
+		SetPlayerArmour(playerid, 100);
+		SetPlayerHealth(playerid, 100);
+		SetPlayerPos(playerid,1528.9910,-1678.1188,5.8906);
+		GivePlayerWeapon(playerid, 29, 9999);
+		GivePlayerWeapon(playerid, 24, 9999);
+		GivePlayerWeapon(playerid, 30, 9999);
+		GivePlayerWeapon(playerid, 34, 9999);
+		SetPlayerColor(playerid, -1);
+	}
+	format(stralioti, sizeof(stralioti), "O Polícial %s foi para a DP", PlayerNome(playerid));
+	MensagemPerto(playerid, COR_KICK, stralioti, 50);
+	return 1;
+}
+
+CMD:fechar(playerid, params[])
+{
+	if(Stralioti[playerid][pAdministrador] <= 2)
+	return SendClientMessage(playerid,COR_ERRO,"Você não é um administrador para criar uma enquete!");
+
+	if(EnqueteAberta == false)
+	return SendClientMessage(playerid,COR_ERRO,"No momento já existe uma enquete aberta");
+
+	SendClientMessageToAll(COR_TEXTO, " ");
+	SendClientMessageToAll(COR_TEXTO, "=============================================================================================");
+	SendFormattedMessageToAll(COR_AMARELO, " O %s %s acaba de fechar uma enquete.", PlayerNome(playerid), PlayerNome(playerid));
+	SendFormattedMessageToAll(COR_AMARELO, "A pergunta foi %s", NomeEnquete);
+	SendFormattedMessageToAll(COR_AMARELO, "Total de votos: Sim [%d] | Não [%d] | Votos [%d].", TotalDeVotosSim, TotalDeVotosNao, (TotalDeVotosSim + TotalDeVotosNao));
+	SendClientMessageToAll(COR_TEXTO, "=============================================================================================");
+
+
+	TotalDeVotosSim = 0;
+	TotalDeVotosNao = 0;
+	EnqueteAberta = false;
+
+	for(new i; i <= HighestID; i++)
+	if(Votos[i] == 1)
+	{
+		Votos[i] = 0;
+	}
+
+	return 1;
+}
+
+CMD:asay(playerid, params[]) {
+	if(Stralioti[playerid][pAdministrador] <= 0){
+		if(sscanf(params, "s", texto)) return SendClientMessage(playerid, COR_VERMELHO, "Use /asay [texto]");
+		format(stralioti, sizeof(stralioti), "[Administrador]: %s: %s", PlayerNome(playerid), params);
+		SendClientMessageToAll(COR_ADMIN, stralioti);
+	}
+	else if(Stralioti[playerid][pPresidente] <= 0) {
+		if(sscanf(params, "s", texto)) return SendClientMessage(playerid, COR_VERMELHO, "Use /asay [texto]");
+		format(stralioti, sizeof(stralioti), "[Presidente]: %s: %s", PlayerNome(playerid), params);
+		SendClientMessageToAll(COR_VERDE, stralioti);
+	}
+	else if(Stralioti[playerid][pVPresidente] <= 0) {
+		if(sscanf(params, "s", texto)) return SendClientMessage(playerid, COR_VERMELHO, "Use /asay [texto]");
+		format(stralioti, sizeof(stralioti), "[Vice Presidente]: %s: %s", PlayerNome(playerid), params);
+		SendClientMessageToAll(COR_VERDE, stralioti);
+	}
+	else if(Stralioti[playerid][pOrg] <= 0) {
+		if(sscanf(params, "s", texto)) return SendClientMessage(playerid, COR_VERMELHO, "Use /asay [texto]");
+		format(stralioti, sizeof(stralioti), "[Organizador]: %s: %s", PlayerNome(playerid), params);
+		SendClientMessageToAll(COR_VERDE, stralioti);
+	}
+	else if(Stralioti[playerid][pPux] <= 0) {
+		if(sscanf(params, "s", texto)) return SendClientMessage(playerid, COR_VERMELHO, "Use /asay [texto]");
+		format(stralioti, sizeof(stralioti), "[Puxador]: %s: %s", PlayerNome(playerid), params);
+		SendClientMessageToAll(COR_VERDE, stralioti);
+	}
+
+	return 1;
+}
+
+CMD:reports(playerid) {
+	if(Stralioti[playerid][pAdministrador] <= 0) return SendClientMessage(playerid, COR_VERMELHO,"Você não é um Administrador"); {
+		format(stralioti2, sizeof(stralioti2), "%s Viu algo de ilegal? use /reportar id motivo", stralioti2);
+		SendClientMessageToAll(COR_ADMIN, stralioti2);
+	}
+	return 1;
+}
+
+CMD:anunciarreporter(playerid) {
+	if(Stralioti[playerid][pReporter] <= 0) return SendClientMessage(playerid, COR_VERMELHO,"Você não	tem permissão"); {
+		format(stralioti2, sizeof(stralioti2), "%s Precisa de filmagens? use /chamar reporter", stralioti2);
+		SendClientMessageToAll(COR_LARANJA, stralioti2);
+	}
+	return 1;
+}
+
+CMD:creditos(playerid) {
+	SendClientMessage(playerid, -1,"GameMode feito por: Fábio Stralioti");
+	SendClientMessage(playerid, -1,"Sistema de Registro: Whoo (Fórum Samp)");
+	return 1;
+}
+
+CMD:anunciarhelper(playerid) {
+	if(Stralioti[playerid][pHelper] <= 0) return SendClientMessage(playerid, COR_VERMELHO,"Você não tem permissão"); {
+		format(stralioti2, sizeof(stralioti2), "%s Precisa de Ajuda? use /chamar helper", stralioti2);
+		SendClientMessageToAll(COR_HELPER, stralioti2);
+	}
+	return 1;
+}
+
+CMD:tr(playerid, params[])
+return cmd_trazer(playerid, params);
+
+CMD:trazer(playerid, params[]) {
+	if(Stralioti[playerid][pAdministrador] <= 0 && Stralioti[playerid][pHelper] <= 0 && Stralioti[playerid][pReporter] <= 0 && Stralioti[playerid][pPM] <= 2 && Stralioti[playerid][pTrafico] <= 2 && Stralioti[playerid][pPux] <= 0 && Stralioti[playerid][pVPresidente] <= 0 && Stralioti[playerid][pPresidente] <= 0 && Stralioti[playerid][pOrg] <= 0) return SendClientMessage(playerid, COR_VERMELHO,"Você não é um Administrador");
+	if(sscanf(params, "u", Id)) return SendClientMessage(playerid, COR_VERMELHO,"Use /trazer [id]");
+	if(!IsPlayerConnected(Id))
+	return SendClientMessage(playerid, COR_VERMELHO,"Este jogador não se encontra online");
+	GetPlayerPos(playerid, FX, FY, FZ);
+	SetPlayerPos(Id, FX, FY, FZ);
+	format(stralioti, sizeof(stralioti), "O %s trouxe o %s", PlayerNome(playerid), PlayerNome(Id));
+	MensagemPerto(playerid, COR_AZULC, stralioti, 50);
+	return 1;
+}
+
+CMD:dararma(playerid, params[]) {
+	new arma, balas;
+	if(Stralioti[playerid][pAdministrador] <= 0 && Stralioti[playerid][pPresidente] <= 0 && Stralioti[playerid][pOrg] <= 0 && Stralioti[playerid][pHelper] <= 0) return SendClientMessage(playerid, COR_VERMELHO,"Você não tem permissão");
+	if(sscanf(params, "udd", Id, arma, balas)) return SendClientMessage(playerid, COR_VERMELHO,"Use /dararma [id] [iddaarma][balas]");
+	if(arma == 38 || arma == 44 || arma == 9 || arma == 4 || arma == 8 || arma == 10 || arma == 11 || arma == 12 || arma == 13 || arma == 14 || arma == 15 || arma == 16 || arma == 17 || arma == 18 || arma == 22) return SendClientMessage(playerid, COR_VERMELHO,"Id de arma proibido");
+	if(arma == 23 || arma == 24 || arma == 25 || arma == 26 || arma == 27 || arma == 28 || arma == 29 || arma == 30 || arma == 31 || arma == 32 || arma == 33 || arma == 34 || arma == 35 || arma == 36 || arma == 37 || arma == 38 || arma == 39 || arma == 40 || arma == 41 || arma == 42 || arma == 44 || arma == 45) return SendClientMessage(playerid, COR_VERMELHO,"Id de arma proibido");
+	format(stralioti, sizeof(stralioti), "O %s de uma arma para o %s", PlayerNome(playerid), PlayerNome(Id));
+	MensagemPerto(playerid, COR_AZULC, stralioti, 50);
+	GivePlayerWeapon(Id, arma, balas);
+	return 1;
+}
+
+CMD:dararmat(playerid, params[]) {
+	new arma, balas, i;
+	if(Stralioti[playerid][pAdministrador] <= 0 && Stralioti[playerid][pPresidente] <= 0 && Stralioti[playerid][pOrg] <= 0 && Stralioti[playerid][pHelper] <= 0) return SendClientMessage(playerid, COR_VERMELHO,"Você não tem permissão");
+	if(sscanf(params, "dd", arma, balas)) return SendClientMessage(playerid, COR_VERMELHO,"Use /dararmat [arma] [balas]");
+	if(arma == 38 || arma == 44 || arma == 9 || arma == 4 || arma == 8 || arma == 10 || arma == 11 || arma == 12 || arma == 13 || arma == 14 || arma == 15 || arma == 16 || arma == 17 || arma == 18 || arma == 22) return SendClientMessage(playerid, COR_VERMELHO,"Id de arma proibido");
+	if(arma == 23 || arma == 24 || arma == 25 || arma == 26 || arma == 27 || arma == 28 || arma == 29 || arma == 30 || arma == 31 || arma == 32 || arma == 33 || arma == 34 || arma == 35 || arma == 36 || arma == 37 || arma == 38 || arma == 39 || arma == 40 || arma == 41 || arma == 42 || arma == 44 || arma == 45) return SendClientMessage(playerid, COR_VERMELHO,"Id de arma proibido");
+	if(GetDistanceBetweenPlayers(playerid, i) <= 30) {
+		format(stralioti, sizeof(stralioti), "O %s de uma arma para todos perto", PlayerNome(playerid), PlayerNome(Id));
+		MensagemPerto(playerid, COR_AZULC, stralioti, 50);
+		GivePlayerWeapon(i, arma, balas);
+	}
+	return 1;
+}
+
+CMD:pee(playerid) {
+	SetPlayerSpecialAction(playerid, SPECIAL_ACTION_PISSING);
+	return 1;
+}
+
+CMD:fall(playerid) {
+	LoopingAnim(playerid,"PED","KO_skid_front",4.1,0,1,1,1,0);
+	return 1;
+}
+
+CMD:gro(playerid) {
+	LoopingAnim(playerid,"BEACH", "ParkSit_M_loop", 4.0, 1, 0, 0, 0, 0);
+	return 1;
+}
+
+CMD:pular(playerid) {
+	new Float:px, Float:py, Float:pz;
+	GetPlayerPos(playerid, px, py, pz);
+	SetPlayerPos(playerid, px, py, pz+0.7);
+	return 1;
+}
+
+CMD:kill(playerid) {
+	format(stralioti, sizeof(stralioti), "O %s se matou", PlayerNome(playerid));
+	MensagemPerto(playerid, COR_KICK, stralioti, 50);
+	SetPlayerHealth(playerid, 0.00);
+	return 1;
+}
+
+CMD:hide(playerid) {
+	LoopingAnim(playerid, "ped", "cower", 3.0, 1, 0, 0, 0, 0);
+	return 1;
+}
+
+CMD:mudarluta(playerid) {
+	ShowPlayerDialog(playerid, MUDARLUTA, DIALOG_STYLE_LIST, "MUDARLUTA", "Capoeira\nChute\nCoronhada", "Escolher", "Sair");
+	return 1;
+}
+
+CMD:onibus(playerid, params[]) {
+	if(Stralioti[playerid][pVPresidente] <= 0 && Stralioti[playerid][pPux] <= 0) return SendClientMessage(playerid, COR_VERMELHO,"Você não tem permissão");
+	GetPlayerPos(playerid, X, Y, Z);
+	GetPlayerFacingAngle(playerid, Angle);
+	CreateVehicle(437, X+5, Y, Z+1, Angle, random(100), random(100), COR_HELPER);
+	SendClientMessage(playerid, COR_HELPER,"Você criou um Ônibus para deleta-lo use /dc ou /dcm");
+	return 1;
+}
+
+CMD:veh(playerid) {
+	if(Stralioti[playerid][pAdministrador] <= 0 && Stralioti[playerid][pOrg] <= 0 && Stralioti[playerid][pPresidente] <= 0) return SendClientMessage(playerid, COR_VERMELHO,"Você não é um Administrador");
+	ShowPlayerDialog(playerid, VEH, DIALOG_STYLE_LIST, "VEH", "Sultan\nInfernus\nNRG-500\nOnibus\nSuper-GT", "Escolher", "Sair");
+	return 1;
+}
+
+CMD:dc(playerid) {
+	if(Stralioti[playerid][pAdministrador] <= 0 && Stralioti[playerid][pOrg] <= 0 && Stralioti[playerid][pPresidente] <= 0) return SendClientMessage(playerid, COR_VERMELHO,"Você não é um Administrador");
+	if(!IsPlayerInAnyVehicle(playerid)) return SendClientMessage(playerid, COR_VERMELHO,"Você não está em um veículo");
+	new veiculo;
+	veiculo = GetPlayerVehicleID(playerid);
+	DestroyVehicle(veiculo);
+	SendClientMessage(playerid, COR_VERMELHO,"Você deletou o veiculo");
+	return 1;
+}
+
+CMD:kick(playerid, params[]) {
+	if(Stralioti[playerid][pAdministrador] <= 0) return SendClientMessage(playerid, COR_VERMELHO,"Você não é um Administrador");
+	if(sscanf(params, "us", Id, motivo)) return SendClientMessage(playerid, COR_VERMELHO,"Use /kick [id] [motivo]");
+	if(!IsPlayerConnected(Id))
+	return SendClientMessage(playerid, COR_VERMELHO,"Este jogador não se enconta online");
+	format(stralioti, sizeof(stralioti), "O Administrador %s kikou o %s motivo: %s", PlayerNome(playerid), PlayerNome(Id), motivo);
+	SendClientMessageToAll(COR_KICK, stralioti);
+	Kick(Id);
+	return 1;
+}
+
+CMD:ban(playerid, params[]) {
+	if(Stralioti[playerid][pAdministrador] <= 0) return SendClientMessage(playerid, COR_VERMELHO,"Você não é um Administrador");
+	if(sscanf(params, "us", Id, motivo)) return SendClientMessage(playerid, COR_VERMELHO,"Use /ban [id] [motivo]");
+	if(!IsPlayerConnected(Id))
+	return SendClientMessage(playerid, COR_VERMELHO,"Este jogador não se encontra online");
+	format(stralioti, sizeof(stralioti), "O Administrador %s baniu o %s motivo: %s", PlayerNome(playerid), PlayerNome(Id), motivo);
+	format(stralioti,sizeof(stralioti),banido,PlayerNome(Id));
+	DOF2_CreateFile(stralioti);
+	Ban(Id);
+	return 1;
+}
+
+CMD:tempban(playerid, params[]) {
+	new dias;
+	if(Stralioti[playerid][pAdministrador] <= 5) return SendClientMessage(playerid, COR_VERMELHO,"Você não é um Administrador");
+	if(sscanf(params, "uds", Id, dias, motivo)) return SendClientMessage(playerid, COR_VERMELHO,"Use /tempban [id][motivo]");
+	if(!IsPlayerConnected(Id))
+	return SendClientMessage(playerid, COR_VERMELHO,"Este jogador não se encontra online");
+    format(stralioti, sizeof(stralioti), "O Administrador %s baniu o %s dias %d motivo: %s", PlayerNome(playerid), PlayerNome(Id), dias, motivo);
+	SendClientMessageToAll(COR_VERMELHO, stralioti);
+	DOF2_CreateFile(stralioti);
+	Ban(Id);
+	return 1;
+}
+
+CMD:desban(playerid, params[]) {
+	if(Stralioti[playerid][pAdministrador] <= 5) return SendClientMessage(playerid, COR_VERMELHO,"Você não tem permissão");
+    if(!strlen(params)) {
+		SendClientMessage(playerid, COR_USOCORRETO, "Uso: /desban [ip ou nick]");
+		return 1;
+	}
+
+	new file[256];
+	format(file,256,"banidos/%s.ini",params);
+
+	if(DOF2_FileExists(file))
+	{
+		DOF2_RemoveFile(file);
+		new string[128];
+		format(string, 128,"O %s %s retirou o ban de '%s' (Nick ou IP).", PlayerNome(playerid), PlayerNome(playerid), params);
+		SendMessageToAdminsEx(string);
+
+		format(string, sizeof(string), "Ban de %s retirado pelo %s.", params, PlayerNome(playerid));
+
+	}
+	else
+	SendClientMessage(playerid, COR_ERRO, "IP/Nick não encontrado.");
+	return 1;
+}
+
+CMD:tapa(playerid, params[]) {
+	new Float:pos[3];
+	if(Stralioti[playerid][pAdministrador] <= 0 && Stralioti[playerid][pPux] <= 0 && Stralioti[playerid][pOrg] <= 0 && Stralioti[playerid][pPresidente] <= 0 && Stralioti[playerid][pVPresidente] <= 0) return SendClientMessage(playerid, COR_VERMELHO,"Você não é um Administrador");
+	if(sscanf(params, "u", Id)) return SendClientMessage(playerid, COR_VERMELHO,"Use /tapa [id]");
+	if(!IsPlayerConnected(Id))
+	return SendClientMessage(playerid, COR_VERMELHO,"Este jogador não se encontra online");
+	GetPlayerHealth(Id, vida);
+	SetPlayerHealth(Id, vida-5);
+	GetPlayerPos(Id, pos[0], pos[1], pos[2]);
+	SetPlayerPos(Id, pos[0], pos[1], pos[2]+5);
+	format(stralioti, sizeof(stralioti), "O %s deu um tapa no %s", PlayerNome(playerid), PlayerNome(Id));
+	MensagemPerto(playerid, COR_AZULC, stralioti, 50);
+	return 1;
+}
+
+CMD:reparar(playerid) {
+	if(Stralioti[playerid][pAdministrador] <= 0) return SendClientMessage(playerid, COR_VERMELHO,"Você não é um Administrador");
+	if(!IsPlayerInAnyVehicle(playerid)) return SendClientMessage(playerid, COR_VERMELHO,"Você não está em um veículo");
+	RepairVehicle(GetPlayerVehicleID(playerid));
+	return 1;
+}
+
+CMD:ir(playerid, params[]) {
+	if(Stralioti[playerid][pAdministrador] <= 0 && Stralioti[playerid][pHelper] <= 0 && Stralioti[playerid][pReporter] <= 0 && Stralioti[playerid][pPM] <= 3 && Stralioti[playerid][pTrafico] <= 4 && Stralioti[playerid][pOrg] <= 0 && Stralioti[playerid][pPresidente] <= 0) return SendClientMessage(playerid, COR_VERMELHO,"Você não tem permissão");
+	if(sscanf(params, "u", Id)) return SendClientMessage(playerid, COR_VERMELHO,"Use /ir [id]");
+	if(!IsPlayerConnected(Id))
+	return SendClientMessage(playerid, COR_VERMELHO,"Este jogador não se encontra online");
+	GetPlayerPos(Id, FX, FY, FZ);
+	SetPlayerPos(playerid, FX, FY, FZ);
+	format(stralioti, sizeof(stralioti), "O %s foi até o %s", PlayerNome(playerid), PlayerNome(Id));
+	MensagemPerto(playerid, COR_AZULC, stralioti, 50);
+	return 1;
+}
+
+CMD:atrf(playerid, params[]) {
+	if(Stralioti[playerid][pTrafico] <= 4) return SendClientMessage(playerid, COR_VERMELHO,"Você não tem permissão");
+	if(sscanf(params, "s", texto)) return SendClientMessage(playerid, COR_VERMELHO,"Use: /atrf [texto]");
+	format(stralioti, sizeof(stralioti), "[TRAFICANTE] %s: ", PlayerNome(playerid), texto);
+	SendClientMessageToAll(COR_ADMIN, stralioti);
+	return 1;
+}
+
+CMD:gov(playerid, params[]) {
+	if(Stralioti[playerid][pPM] <= 4) return SendClientMessage(playerid, COR_VERMELHO,"Você não tem permissão");
+	if(sscanf(params, "s", texto)) return SendClientMessage(playerid, COR_VERMELHO,"Use: /gov [texto]");
+	format(stralioti, sizeof(stralioti), "[POLÍCIAL] %s: ", PlayerNome(playerid), texto);
+	SendClientMessageToAll(COR_ADMIN, stralioti);
+	return 1;
+}
+
+CMD:noticias(playerid, params[]) {
+	if(Stralioti[playerid][pReporter] <= 0) return SendClientMessage(playerid, COR_VERMELHO,"Você não tem permissão");
+	if(sscanf(params, "s", texto)) return SendClientMessage(playerid, COR_VERMELHO,"Use: /noticias [texto]");
+	format(stralioti, sizeof(stralioti), "[REPÓRTER] %s: ", PlayerNome(playerid), texto);
+	SendClientMessageToAll(COR_LARANJA, stralioti);
+	return 1;
+}
+
+CMD:jogar(playerid) {
+	if(Stralioti[playerid][pPM] <= 0 &&	Stralioti[playerid][pHelper] <= 0 && Stralioti[playerid][pReporter] <= 0) return SendClientMessage(playerid, COR_VERMELHO,"Você não tem permissão");
+	format(stralioti, sizeof(stralioti), "O %s saiu do trabalho ", PlayerNome(playerid));
+	MensagemPerto(playerid, COR_KICK, stralioti, 50);
+	SpawnPlayer(playerid);
+	return 1;
+}
+
+CMD:bateria(playerid) {
+	if(Stralioti[playerid][pBtr] <= 0) return SendClientMessage(playerid, COR_VERMELHO,"Você não tem permissão");
+	GivePlayerWeapon(playerid, 6, 999);
+	return 1;
+}
+
+CMD:pbateria(playerid, params[]) {
+	new i;
+	if(Stralioti[playerid][pBtr] <= 0) return SendClientMessage(playerid, COR_VERMELHO,"Você não tem permissão");
+	LoopingAnim(playerid,"RAPPING","RAP_C_Loop",4.0,1,0,0,0,0);
+	if(GetDistanceBetweenPlayers(playerid, i) <= 50)
+	{
+
+
+
+		PlayAudioStreamForPlayer(i, "https://dl.dropboxusercontent.com/s/l7izq2z7y4nha8f/Untitled.mp3", X, Y, Z, 100.0, 1);
+	}
+	return 1;
+}
+
+CMD:traficar(playerid, params[]) {
+	if(Stralioti[playerid][pTrafico] <= 0) return SendClientMessage(playerid, COR_VERMELHO,"Você não é um Tráficante");
+
+	if(Stralioti[playerid][pTrafico] == 1 || Stralioti[playerid][pTrafico] == 2)
+	{
+
+
+
+
+		SetPlayerPos(playerid,-688.0933,946.2870,13.0313);
+		SetPlayerArmour(playerid, 100);
+		SetPlayerHealth(playerid, 100);
+		SetPlayerColor(playerid, COR_TRF);
+		GivePlayerWeapon(playerid, 22, 9999);
+		GivePlayerWeapon(playerid, 25, 9999);
+	}
+	if(Stralioti[playerid][pTrafico] == 3)
+	{
+
+
+
+
+		SetPlayerColor(playerid, COR_TRF);
+		SetPlayerPos(playerid,-688.0933,946.2870,13.0313);
+		SetPlayerArmour(playerid, 100);
+		SetPlayerHealth(playerid, 100);
+		GivePlayerWeapon(playerid, 22, 9999);
+		GivePlayerWeapon(playerid, 25, 9999);
+		GivePlayerWeapon(playerid, 29, 9999);
+	}
+	if(Stralioti[playerid][pTrafico] == 4)
+	{
+
+
+
+
+		SetPlayerColor(playerid, COR_TRF);
+		SetPlayerArmour(playerid, 100);
+		SetPlayerHealth(playerid, 100);
+		SetPlayerPos(playerid,-688.0933,946.2870,13.0313);
+		GivePlayerWeapon(playerid, 25, 9999);
+		GivePlayerWeapon(playerid, 29, 9999);
+		GivePlayerWeapon(playerid, 24, 9999);
+		GivePlayerWeapon(playerid, 30, 9999);
+	}
+	if(Stralioti[playerid][pTrafico] == 5)
+	{
+
+
+
+		SetPlayerArmour(playerid, 100);
+		SetPlayerHealth(playerid, 100);
+		SetPlayerPos(playerid,-688.0933,946.2870,13.0313);
+		GivePlayerWeapon(playerid, 29, 9999);
+		GivePlayerWeapon(playerid, 24, 9999);
+		GivePlayerWeapon(playerid, 30, 9999);
+		GivePlayerWeapon(playerid, 34, 9999);
+		SetPlayerColor(playerid, COR_TRF);
+	}
+	format(stralioti, sizeof(stralioti), "O Tráficante %s foi para a HQ", PlayerNome(playerid));
+	MensagemPerto(playerid, COR_KICK, stralioti, 50);
+	return 1;
+}
+
+CMD:olhar(playerid, params[]) {
+	if(Stralioti[playerid][pAdministrador] <= 0) return SendClientMessage(playerid, COR_VERMELHO,"Você não é um Administrador");
+	if(sscanf(params, "u", Id)) return SendClientMessage(playerid, COR_VERMELHO,"Use /olhar [id]");
+	if(!IsPlayerConnected(Id))
+	return SendClientMessage(playerid, COR_VERMELHO, "Este jogador não se encontra online");
+	SendClientMessage(playerid, COR_AZULC,"Você entrou no modo espectador");
+	TogglePlayerSpectating(Id, 1);
+	return 1;
+}
+
+CMD:olhar_off(playerid, params[]) {
+	if(Stralioti[playerid][pAdministrador] <= 0) return SendClientMessage(playerid, COR_VERMELHO,"Você não é um Administrador");
+	SendClientMessage(playerid, COR_VERMELHO,"Você saiu do modo espectador");
+	TogglePlayerSpectating(Id, 0);
+	return 1;
+}
+
+CMD:prender(playerid, params[]) {
+	if(Stralioti[playerid][pAdministrador] <= 0) return SendClientMessage(playerid, COR_VERMELHO,"Você não é um Administrador");
+	if(sscanf(params, "uds", Id, minutos, motivo)) return SendClientMessage(playerid, COR_VERMELHO,"Use /prender [id] [minutos] [motivo]");
+	if(!IsPlayerConnected(Id))
+	return SendClientMessage(playerid, COR_VERMELHO,"Este jogador não se encontra online");
+	SetPlayerInterior(playerid, 5);
+	SetPlayerPos(playerid, 322.7717,305.9022,999.1484);
+	format(stralioti, sizeof(stralioti), "O %s foi preso pelo Administrador %s tempo: %d motivo: %s", PlayerNome(playerid), PlayerNome(Id), minutos, motivo);
+	SendClientMessageToAll(COR_KICK, stralioti);
+	return 1;
+}
+
+CMD:cone(playerid, params[]) {
+	if(Stralioti[playerid][pAdministrador] <= 0 && Stralioti[playerid][pHelper] <= 3 && Stralioti[playerid][pReporter] <= 0 && Stralioti[playerid][pPM] <= 0) return SendClientMessage(playerid, COR_VERMELHO,"Você não tem permissão");
+	new Float:XA, Float:YA, Float:ZA, Float:AB;
+	GetPlayerPos(playerid, XA, YA, ZA);
+	GetPlayerFacingAngle(playerid, AB);
+	Stralioti[playerid][pCone] = CreateObject(1237, XA, YA, ZA-1.0, 0.0, 0.0, AB);
+	SetPlayerPos(playerid, XA, YA, ZA+4);
+	format(stralioti, sizeof(stralioti), "%s criou um cone.", PlayerNome(playerid));
+	MensagemPerto(playerid, COR_AZULC, stralioti, 50);
+	return 1;
+}
+
+CMD:grade(playerid, params[]) {
+	if(Stralioti[playerid][pAdministrador] <= 0 && Stralioti[playerid][pHelper] <= 3 && Stralioti[playerid][pReporter] <= 0 && Stralioti[playerid][pPM] <= 0)return SendClientMessage(playerid, COR_VERMELHO,"Você não tem permissão");
+	new Float:XB, Float:YB, Float:ZB, Float:AC;
+	GetPlayerPos(playerid, XB, YB, ZB);
+	GetPlayerFacingAngle(playerid, AC);
+	Stralioti[playerid][pGrade] = CreateObject(980, XB, YB, ZB-1.0, 0.0, 0.0, AC);
+	SetPlayerPos(playerid, XB, YB, ZB+4);
+	format(stralioti, sizeof(stralioti), "%s criou uma grade.", PlayerNome(playerid));
+	MensagemPerto(playerid, COR_AZULC, stralioti, 50);
+	return 1;
+}
+
+CMD:rgrade(playerid, params[]) {
+	if(Stralioti[playerid][pAdministrador] <= 0 && Stralioti[playerid][pHelper] <= 3 && Stralioti[playerid][pReporter] <= 0 && Stralioti[playerid][pPM] <= 0)return SendClientMessage(playerid, COR_VERMELHO,"Você não tem permissão");
+	DestroyObject(Stralioti[playerid][pGrade]);
+	Stralioti[playerid][pGrade] = 0;
+	format(stralioti, sizeof(stralioti), "%s destruiu uma grade", PlayerNome(playerid));
+	MensagemPerto(playerid, COR_VERMELHO, stralioti, 50);
+	return 1;
+}
+
+CMD:rcone(playerid, params[]) {
+	if(Stralioti[playerid][pAdministrador] <= 0 && Stralioti[playerid][pHelper] <= 3 && Stralioti[playerid][pReporter] <= 0 && Stralioti[playerid][pPM] <= 0)return SendClientMessage(playerid, COR_VERMELHO,"Você não tem permissão");
+	DestroyObject(Stralioti[playerid][pCone]);
+	Stralioti[playerid][pCone] = 0;
+	format(stralioti, sizeof(stralioti), "%s destruiu um cone", PlayerNome(playerid));
+	MensagemPerto(playerid, COR_VERMELHO, stralioti, 50);
+	return 1;
+}
+
+CMD:escudo(playerid, params[]) {
+	if(Stralioti[playerid][pPM] <= 0)return SendClientMessage(playerid, COR_VERMELHO,"Você não tem permissão");
+	if(Escudo[playerid] == 1) {
+		RemovePlayerAttachedObject(playerid,3);
+		SendClientMessage(playerid, COR_VERMELHO,"Escudo Desativado");
+		Escudo[playerid] = 0;
+	}
+	if(Escudo[playerid] == 0) {
+		SetPlayerAttachedObject(playerid,3,18637,13,0.35,0.0,0.0,0.0,0.0,180.0);
+		SendClientMessage(playerid, COR_AZULC,"Escudo Ativado");
+		Escudo[playerid] = 1;
+	}
+	format(stralioti, sizeof(stralioti), "%s Ativou/Desativou o escudo", PlayerNome(playerid));
+	MensagemPerto(playerid, COR_VERMELHO, stralioti, 50);
+	return 1;
+}
+
+CMD:soltar(playerid, params[]) {
+	if(Stralioti[playerid][pAdministrador] <= 0) return SendClientMessage(playerid, COR_VERMELHO,"Você não é um Administrador");
+	if(sscanf(params, "us", Id, motivo)) return SendClientMessage(playerid, COR_VERMELHO,"Use /soltar [id] [motivo]");
+	if(!IsPlayerConnected(Id))
+	return SendClientMessage(playerid, COR_VERMELHO,"Este jogador não se encontra online");
+	SpawnPlayer(playerid);
+	format(stralioti, sizeof(stralioti), "O %s foi solto pelo Administrador %s  motivo: %s", PlayerNome(playerid), PlayerNome(Id), motivo);
+	SendClientMessageToAll(COR_KICK, stralioti);
+	return 1;
+}
+
+CMD:clima(playerid, params[]) {
+	new clima;
+	if(Stralioti[playerid][pAdministrador] <= 5) return SendClientMessage(playerid, COR_VERMELHO,"Você não é um Administrador");
+	if(sscanf(params, "d", clima)) return SendClientMessage(playerid, COR_VERMELHO,"Use: /clima [id]");
+	SetWeather(clima);
+	format(stralioti, sizeof(stralioti),"O %s alterou o clima para %d", PlayerNome(playerid), clima);
+	SendClientMessageToAll(-1, stralioti);
+	return 1;
+}
+
+CMD:congelar(playerid, params[]) {
+	if(Stralioti[playerid][pAdministrador] <= 0) return SendClientMessage(playerid, COR_VERMELHO,"Você não é um Administrador");
+	if(sscanf(params, "u", Id)) return SendClientMessage(playerid, COR_VERMELHO,"Use /congelar [id]");
+	if(!IsPlayerConnected(Id))
+	return SendClientMessage(playerid, COR_VERMELHO,"Este jogador não se encontra online");
+	TogglePlayerControllable(Id,0);
+	format(stralioti, sizeof(stralioti), "O Administrador %s congelou o %s", PlayerNome(playerid), PlayerNome(Id));
+	MensagemPerto(playerid, -1, stralioti, 50);
+	return 1;
+}
+
+CMD:descongelar(playerid, params[]) {
+	if(Stralioti[playerid][pAdministrador] <= 0) return SendClientMessage(playerid, COR_VERMELHO,"Você não é um Administrador");
+	if(sscanf(params, "u", Id)) return SendClientMessage(playerid, COR_VERMELHO,"Use /descongelar [id]");
+	if(!IsPlayerConnected(Id))
+	return SendClientMessage(playerid, COR_VERMELHO,"Este jogador não se encontra online");
+	TogglePlayerControllable(Id,1);
+	format(stralioti, sizeof(stralioti), "O Administrador %s descongelou o %s", PlayerNome(playerid), PlayerNome(Id));
+	MensagemPerto(playerid, -1, stralioti, 50);
+	return 1;
+}
+
+CMD:vidat(playerid) {
+	new i;
+	if(Stralioti[playerid][pAdministrador] <= 0 && Stralioti[playerid][pPux] <= 0 && Stralioti[playerid][pOrg] <= 0 && Stralioti[playerid][pVPresidente] <= 0 && Stralioti[playerid][pPresidente] <= 0) return SendClientMessage(playerid, COR_VERMELHO,"Você não tem permissão");
+	if(GetDistanceBetweenPlayers(playerid, i) <= 30) {
+		format(stralioti, sizeof(stralioti), "%s deu vida para todos", PlayerNome(playerid));
+		MensagemPerto(playerid, COR_AZULC, stralioti, 50);
+		SetPlayerHealth(i, 100);
+	}
+	return 1;
+}
+
+CMD:coletet(playerid) {
+	new i;
+	if(Stralioti[playerid][pAdministrador] <= 0) return SendClientMessage(playerid, COR_VERMELHO,"Você não é um Administrador");
+	if(GetDistanceBetweenPlayers(playerid, i) <= 30) {
+		format(stralioti, sizeof(stralioti), "%s deu colete para todos", PlayerNome(playerid));
+		MensagemPerto(playerid, COR_AZULC, stralioti, 50);
+		SetPlayerArmour(i, 100);
+	}
+	return 1;
+}
+
+CMD:armas(playerid) {
+	if(Stralioti[playerid][pAdministrador] <= 3) return SendClientMessage(playerid, COR_VERMELHO,"Você não é um Administrador");
+	ShowPlayerDialog(playerid, ARMAS, DIALOG_STYLE_LIST, "ARMAS", "Soco Inglês\nTaco de Golf\nParaquedas\nMP5\nM4-A1\nFaca\nKatana\nDesert Eagle\nShotgun\nCombat Shotgun\nSniper Rifle", "Escolher", "Sair");
+	return 1;
+}
+
+CMD:pinfo(playerid, params[]) {
+	if(Stralioti[playerid][pAdministrador] <= 0) return SendClientMessage(playerid, COR_VERMELHO,"Você não é um Administrador");
+	if(sscanf(params, "u", Id)) return SendClientMessage(playerid, COR_VERMELHO,"Use /pinfo [id]");
+	if(!IsPlayerConnected(Id))
+	return SendClientMessage(playerid, COR_VERMELHO, "Este jogador não se encontra online");
+	new ip[24];
+	new Float:health;
+	new Float:armour;
+	new ping = GetPlayerPing(Id);
+	GetPlayerHealth(Id, health);
+	GetPlayerArmour(Id, armour);
+	GetPlayerIp(Id, ip, sizeof ip);
+
+	format(stralioti, sizeof(stralioti), "Informações de: %s", PlayerNome(playerid));
+	SendClientMessage(playerid, -1, stralioti);
+
+	format(stralioti, sizeof(stralioti), "IP: %s", ip);
+	SendClientMessage(playerid, -1, stralioti);
+	format(stralioti, sizeof(stralioti), "Vida: %.1f", health);
+	SendClientMessage(playerid, -1, stralioti);
+	format(stralioti, sizeof(stralioti), "Colete: %.1f", armour);
+	SendClientMessage(playerid, -1, stralioti);
+	format(stralioti, sizeof(stralioti), "Ping: %d", ping);
+	SendClientMessage(playerid, -1, stralioti);
+	return 1;
+}
+
+CMD:vida(playerid, params[]) {
+	if(Stralioti[playerid][pAdministrador] <= 0) return SendClientMessage(playerid, COR_VERMELHO,"Você não é um Administrador");
+	if(sscanf(params,"uf",Id,vida)) return SendClientMessage(playerid, COR_VERMELHO,"Use /vida [id] [quantidade]");
+	if(vida < 0 || vida  > 100) return SendClientMessage(playerid, COR_VERMELHO,"Quantidade invalida 0 - 100");
+	SetPlayerHealth(Id,vida);
+	format(stralioti, sizeof(stralioti), "O Administrador %s setou a vida do %s", PlayerNome(playerid), PlayerNome(Id));
+	MensagemPerto(playerid, COR_AZULC, stralioti, 50);
+	return 1;
+}
+
+CMD:cnn(playerid, params[]) {
+	new i;
+	if(Stralioti[playerid][pAdministrador] <= 0 && Stralioti[playerid][pPresidente] <= 0 && Stralioti[playerid][pVPresidente] <= 0 && Stralioti[playerid][pOrg] <= 0) return SendClientMessage(playerid, COR_VERMELHO,"Você não é um Administrador");
+	if(sscanf(params, "s", texto)) return SendClientMessage(playerid, COR_VERMELHO,"Use: /cnn [texto]");
+	if(GetDistanceBetweenPlayers(playerid, i) <= 50){
+		format(stralioti, sizeof(stralioti), "%s: %s", PlayerNome(playerid), texto);
+		GameTextForAll(stralioti, 2000, 4);
+	}
+	return 1;
+}
+
+CMD:cnngm(playerid, params[]) {
+	if(Stralioti[playerid][pAdministrador] <= 5) return SendClientMessage(playerid, COR_VERMELHO,"Você não é um Administrador");
+	if(sscanf(params, "s", texto)) return SendClientMessage(playerid, COR_VERMELHO,"Use: /cnn [texto]");
+	format(stralioti, sizeof(stralioti), "%s: %s", PlayerNome(playerid), texto);
+	GameTextForAll(stralioti, 2000, 4);
+	return 1;
+}
+
+CMD:colete(playerid, params[]) {
+	if(Stralioti[playerid][pAdministrador] <= 0) return SendClientMessage(playerid, COR_VERMELHO,"Você não é um Administrador");
+	if(sscanf(params,"uf",Id,colete)) return SendClientMessage(playerid, COR_VERMELHO,"Use /vida [id] [quantidade]");
+	if(colete < 0 || colete  > 100) return SendClientMessage(playerid, COR_VERMELHO,"Quantidade invalida 0 - 100");
+	SetPlayerArmour(Id,colete);
+	format(stralioti, sizeof(stralioti), "O Administrador %s setou o colete do %s", PlayerNome(playerid), PlayerNome(Id));
+	MensagemPerto(playerid, COR_AZULC, stralioti, 50);
+	return 1;
+}
+
+ConvertDays(dias)
+{
+
+    new
+        valueday = 86400*dias,
+        daysconvert,
+        gtime = gettime()
+    ;
+
+    #emit LOAD.S.PRI gtime
+    #emit LOAD.S.ALT valueday
+    #emit ADD
+    #emit STOR.S.PRI daysconvert
+
+    return daysconvert;
+}
+
+convertNumber(n)
+{
+    new dia, hr, mn, seg, resto;
+
+    resto = n;
+    seg = resto % 60;
+    resto /= 60;
+    mn = resto % 60;
+    resto /= 60;
+    hr = resto % 24;
+    resto /= 24;
+    dia = resto;
+
+    new str[50];
+    format(str, sizeof(str), "%ddias, %02dh %02dm %02ds", dia, hr, mn, seg);
+    return str;
+}
+
+PlayerNome(playerid) {
+	new nomeplayer[MAX_PLAYER_NAME];
+	GetPlayerName(playerid, nomeplayer, sizeof(nomeplayer));
+	return nomeplayer;
+}
+
+MensagemPerto(playerid, cor, text[], distancia)
+{
+
+	for(new i=0; i <= MAX_PLAYERS; i++)
+	if(GetDistanceBetweenPlayers(playerid, i) <= distancia)
+	{
+		if(GetPlayerVirtualWorld(playerid) == GetPlayerVirtualWorld(i))
+		{
+			new string[128];
+			format(string, 128, text);
+			SendClientMessage(i,cor,string);
+		}
+	}
+	return 1;
+}
+
+GetDistanceBetweenPlayers(playerid,playerid2)
+{
+	new Float:x1,Float:y1,Float:z1,Float:x2,Float:y2,Float:z2;
+	new Float:tmpdis;
+	GetPlayerPos(playerid,x1,y1,z1);
+	GetPlayerPos(playerid2,x2,y2,z2);
+	tmpdis = floatsqroot(floatpower(floatabs(floatsub(x2,x1)),2)+floatpower(floatabs(floatsub(y2,y1)),2)+floatpower(floatabs(floatsub(z2,z1)),2));
+	return floatround(tmpdis);
+}
+
+IsKeyJustDown(key, newkeys, oldkeys)
+{
+	if((newkeys & key) && !(oldkeys & key)) return 1;
+	return 0;
+}
+
+public SendMessageToAdminsEx(const string[])
+		{
+			for(new i = 0; i <= HighestID; i++)
+			{
+				if(IsPlayerConnected(i) == 1)
+				{
+					if(Stralioti[i][pAdministrador] <= 0)
+					{
+						SendClientMessage(i, 0xFFBD9DFF, string);
+					}
+				}
+			}
+			return 1;
+		}
+
+LoopingAnim(playerid,animlib[],animname[], Float:Speed, looping, lockx, locky, lockz, lp)
+{
+	if (gPlayerUsingLoopingAnim[playerid] == 1) TextDrawHideForPlayer(playerid,txtAnimHelper);
+	gPlayerUsingLoopingAnim[playerid] = 1;
+	ApplyAnimation(playerid, animlib, animname, Speed, looping, lockx, locky, lockz, lp);
+	TextDrawShowForPlayer(playerid,txtAnimHelper);
+	animation[playerid]++;
+}
+
+SendFamilyMessage(orgid, cor, mensagem[])
+{
+	for(new i = 0; i < MAX_PLAYERS; i++)
+	{
+
+
+
+
+
+		if(IsPlayerConnected(i))
+		{
+
+
+
+			if(Stralioti[i][pTrafico] == orgid)
+			{
+
+
+
+				SendClientMessage(i, cor, mensagem);
+			}
+			if(Stralioti[i][pPM] == orgid)
+			{
+
+
+
+
+				SendClientMessage(i, cor, mensagem);
+			}
+		}
+	}
+	return 0;
+}
+
+public SendMensagens()
+{
+	new string[265];
+	new random1 = random(sizeof(Mensagens));
+	new random2 = random(sizeof(Cores));
+	format(string, sizeof(string), "[ANÚNCIO] %s", Mensagens[random1]);
+	SendClientMessageToAll(Cores[random2],string);
+ 	return 1;
+}
+
+SendMessageToReporter(color,const string[])
+{
+	for(new i = 0; i <= MAX_PLAYERS; i++)
+	{
+
+
+
+		if(IsPlayerConnected(i) == 1)
+		{
+
+
+
+			if(Stralioti[i][pReporter] >= 1)
+			{
+
+
+
+				SendClientMessage(i, color, string);
+			}
+		}
+	}
+
+	return 1;
+}
+
+forward StraliotiTag(playerid);
+public StraliotiTag(playerid) {
+        if(Stralioti[playerid][pAdministrador] > 0) {
+                SetPlayerChatBubble(playerid, "Administrador", COR_ADMIN, 100.0, 6000);
+        }
+        return 1;
+}
+
+@pagamento();
+public @pagamento()
+{
+    new Hour, Minute, Second;
+    gettime(Hour, Minute, Second);
+    if(!Minute)
+    {
+        for(new i = 0; i != MAX_PLAYERS; ++i) if(IsPlayerConnected(i))
+        {
+            GivePlayerMoney(i, VALOR);
+            SetPlayerScore(i, GetPlayerScore(i) + 2);
+            SavePlayer(i);
+        }
+    }
+    return SendClientMessageToAll(COR_AZULC, "Payday: Você ganhou 5000 mil e 2 score's");
+}
+
+SendMessageToAdminsAndHelper(color,const string[])
+{
+	for(new i = 0; i <= MAX_PLAYERS; i++)
+	{
+		if(IsPlayerConnected(i) == 1)
+		{
+			if(Stralioti[i][pAdministrador] >= 1 || Stralioti[i][pHelper] >= 1)
+			{
+				SendClientMessage(i, color, string);
+			}
+		}
+	}
+
+	return 1;
+}
+
+StopLoopingAnim(playerid)
+{
+	gPlayerUsingLoopingAnim[playerid] = 0;
+	ApplyAnimation(playerid, "CARRY", "crry_prtial", 4.0, 0, 0, 0, 0, 0);
+}
+
+forward Kicka(p); public Kicka(p) {
+	#undef Kick
+	Kick(p);
+	#define Kick(%0) SetTimerEx("Kicka", 100, false, "i", %0)
+	return 1;
+}
+
+forward Bana(p); public Bana(p) {
+	#undef Ban
+	Ban(p);
+	#define Ban(%0) SetTimerEx("Bana", 100, false, "i", %0)
+	return 1;
+}

@@ -1,0 +1,49 @@
+/*
+	Ant-Double Players by Mandrack_FreeZe
+	***NÃO RETIRE OS CRÉDITOS***
+*/
+#include <a_samp>
+
+#define loop(%0,%1) for(new %0; %0 < %1; ++%0)
+
+new pSpawnado[MAX_PLAYERS];
+public OnFilterScriptInit()
+{
+	print("\n--------------------------------------");
+	print(" Ant Double Players -- Mandrack_FreeZe");
+	print("--------------------------------------\n");
+	return 1;
+}
+public OnPlayerDisconnect(playerid)
+{
+    pSpawnado[playerid] = 0;
+	return 1;
+}
+public OnPlayerConnect(playerid)
+{
+	new pIP[16];
+	new sIP[16];
+	new pName[MAX_PLAYER_NAME];
+	GetPlayerName(playerid, pName, sizeof(pName));
+	loop(i, GetMaxPlayers()-playerid)
+	{
+	    GetPlayerIp(playerid, pIP,sizeof pIP);
+	    GetPlayerIp(i, sIP,sizeof sIP);
+	    if(pSpawnado[i] == 1)
+	    {
+		    if(strcmp(pIP, pIP) == strcmp(sIP, sIP))
+		    {
+		        Kick(playerid);
+		        printf("O player [%d]%s foi kicado por ter 2 IPs logados.", playerid, pName);
+		    }
+	    }
+	}
+	
+	return 1;
+}
+
+public OnPlayerSpawn(playerid)
+{
+	pSpawnado[playerid] = 1;
+	return 1;
+}

@@ -2,6 +2,7 @@
 
 <p align="center">
 GTA Facçoes was an online GTA server played by many players. <br/>
+this project was created from scratch by Deiverson and HugoLeonardo.<br/>
 </p>
 
 <p align="center">

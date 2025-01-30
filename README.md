@@ -1,19 +1,19 @@
 <h1 align="center"> GTA Facções v1.1</h1>
 
 <p align="center">
-GTA Facções foi um servidor de GTA online jogado por muitos players. <br/>
+GTA Facçoes was an online GTA server played by many players. <br/>
 </p>
 
 <p align="center">
-ATENÇÃO: Este jogo trata-se apenas de uma demonstração da realidade vivida em alguns bairros do Rio de janeiro. <br/>
-Não fazemos apologia ao crime organizado <br/>
+ATTENTION: This game is just a demonstration of the reality experienced in some neighborhoods in Rio de Janeiro. <br/>
+We do not support organized crime<br/>
 </p>
 
 <p align="center">
-  <a href="#-tecnologias">Tecnologias</a>     |    
-  <a href="#-projeto">Projeto</a>     |    
+  <a href="#-tecnologias">Technologies</a>     |    
+  <a href="#-projeto">Project</a>     |    
   <a href="#-layout">Layout</a>     |    
-  <a href="#memo-licença">Licença</a>
+  <a href="#memo-licença">License</a>
 </p>
 
 <p align="center">
@@ -28,14 +28,33 @@ Não fazemos apologia ao crime organizado <br/>
 
 ##  🚀 Tecnologias
 
-Esse projeto foi desenvolvido com as seguintes tecnologias:
+This project was developed using the following technologies:
 
-- Pawno (É uma linguagem de quarta geração, influenciada pela linguagem C.)
+- Pawno (It is a fourth generation language, influenced by the C language.)
 - MySQL
 - Git e Github
 
+
 ##  💻 Projeto
 
-GTA San andreas é um servidor de jogo online para se divertir com os amigos.
+Main Gamemode Systems
 
-<a href="https://www.youtube.com/watch?v=QFZeA2PH2PQ" target="_blank">- [Visite o projeto online] </a>
+- Data saving with MySQL
+- Vip system
+- Xp system (PayDay)
+- Events system
+- ATM Explosion
+- Slum Arsenal
+- GPS System
+- Explosion of Security Prison Gates for Rescues
+- Domination of rival favelas and pacification of the police
+- Main Organizations: Reporters, Mototaxi drivers, PCRJ, PMRJ and Helpers.
+- Main Favela Positions: Owner of the Hill, Faction Leader, Front, Manager, Steamer and Rocket Man
+- PCRJ Positions: Agent, Clerk, Inspector, Investigator, Delegate
+- PMRJ and Bope positions: Recruit, Soldier, Sergeant, Captain, Colonel
+- AntFakeKill system, AntAimbot and others
+
+
+GTA San Andreas Multiplayer is an online game server to have fun with friends.
+
+<a href="https://www.youtube.com/watch?v=QFZeA2PH2PQ" target="_blank">- [Click here to see the project] </a>

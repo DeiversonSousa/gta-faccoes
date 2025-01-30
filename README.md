@@ -1,7 +1,7 @@
 <h1 align="center"> GTA Facções v1.1</h1>
 
 <p align="center">
-GTA Facçoes was an online GTA server played by many players. <br/>
+GTA Facçoes was an online GTA San Andreas Multilplayer server played by many players. <br/>
 this project was created from scratch by Deiverson and HugoLeonardo.<br/>
 </p>
 

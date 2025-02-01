@@ -8,6 +8,7 @@ this project was created from scratch by Deiverson and HugoLeonardo.<br/>
 <p align="center">
 ATTENTION: This game is just a demonstration of the reality experienced in some neighborhoods in Rio de Janeiro. <br/>
 We do not support organized crime<br/>
+pioneer in online servers, this project was completed in 2015<br/>
 </p>
 
 <p align="center">

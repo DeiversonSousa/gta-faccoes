@@ -34,8 +34,9 @@ This project was developed using the following technologies:
 
 - Pawno (It is a fourth generation language, influenced by the C language.)
 - MySQL
-- Git e Github<br/>
-  <a href="https://github.com/DeiversonSousa/gta-faccoes/blob/main/gamemodes/GF1.1.pwn" target="_blank">- [Click here to see the gamemode code] </a>
+- Git e Github
+- <a href="https://github.com/DeiversonSousa/gta-faccoes/blob/main/gamemodes/GF1.1.pwn" target="_blank">- [Click here to see the gamemode code] </a>
+  
 
 
 ##  💻 Projeto
